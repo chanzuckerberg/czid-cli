@@ -1,0 +1,7 @@
+coverage.out
+dist
+.vscode
+coverage.txt
+bin
+idseq-cli-v2
+idseq-cli
