@@ -1,0 +1,61 @@
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+- env:
+  - CGO_ENABLED=0
+  goos:
+    - darwin
+    - linux
+    - windows
+  goarch:
+    - amd64
+
+release:
+  prerelease: false
+
+archives:
+  - files:
+    - LICENSE
+    - README.md
+
+brews:
+- description: "A CLI for uploading samples to IDseq"
+  tap:
+    owner: chanzuckerberg
+    name: homebrew-tap
+    token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+  homepage: "https://github.com/chanzuckerberg/idseq-cli-v2"
+  test: system "#{bin}/idseq --version"
+  install: |
+    bin.install "idseq"
+    bash_completion.install "completions/bash" => "idseq"
+    zsh_completion.install "completions/zsh" => "_idseq"
+
+nfpms:
+  - 
+    vendor: chanzuckerberg
+    maintainer: Todd Morse <todd@morsecodist.io>
+    homepage: "https://github.com/chanzuckerberg/idseq"
+    description: "A CLI for uploading samples to IDseq"
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    files:
+      "completions/bash": "/etc/bash_completion.d/idseq"
+      "completions/zsh": "/usr/share/zsh/functions/Completion/idseq"
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - "^docs:"
+    - "^test:"

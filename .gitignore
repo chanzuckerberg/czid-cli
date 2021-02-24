@@ -4,4 +4,4 @@ dist
 coverage.txt
 bin
 idseq-cli-v2
-idseq-cli
+idseq
