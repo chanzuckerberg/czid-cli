@@ -4,7 +4,7 @@ on:
 jobs:
   Build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/setup-go@v2
         with:
@@ -16,7 +16,7 @@ jobs:
         run: make build
   Test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/setup-go@v2
         with:
@@ -30,7 +30,7 @@ jobs:
           bash <(curl -s https://codecov.io/bash)
   Dependencies:
     name: Dependencies
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/setup-go@v2
         with:
@@ -42,7 +42,7 @@ jobs:
         run: make check-mod
   Lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Lint
