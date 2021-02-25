@@ -5,3 +5,4 @@ coverage.txt
 bin
 idseq-cli-v2
 idseq
+.env

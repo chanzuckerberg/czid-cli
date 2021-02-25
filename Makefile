@@ -6,7 +6,7 @@ test: ## run tests, will update go.mod
 .PHONY: test
 
 build: ## build the binary
-	go build -o idseq .
+	go build -o idseq -ldflags="-X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth.clientID=${AUTH0_CLIENT_ID}" .
 .PHONY: build
 
 deps:

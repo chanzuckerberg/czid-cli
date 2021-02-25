@@ -49,6 +49,7 @@ func initConfig() {
 			os.Exit(1)
 		}
 
+		viper.SetConfigType("yaml")
 		// Search config in home directory with name ".idseq-cli-v2" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".idseq-cli-v2")
