@@ -13,7 +13,6 @@ import (
 )
 
 func mockFormPost(endpoint string, params map[string]string, r interface{}) error {
-
 	if endpoint == "https://czi-idseq-dev.auth0.com/oauth/device/code" {
 		deviceCode := "device_code"
 		if strings.Contains(params["scope"], "offline_access") {
