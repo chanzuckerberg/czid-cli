@@ -8,28 +8,39 @@ import (
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Authenticate with IDSeq",
+	Long: `Log into IDSeq so you can upload samples.
+This will either open a web page or provide you with
+a link to a web page if you use the --headless
+option. Once you log in on that web page on any
+device (not necessarily the one you ran the command on)
+you will be authorized to upload samples to your
+IDSeq account.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		auth.Login()
+By default you will remain authenticated for a short
+time. If you would like to obtain a secret that
+allows you to stay persistently authenticated use the
+--persistent option. If you do this a long lived
+secret will be added to your configuration file
+so please exercise caution when handling this
+file. If you suspect your secret has been
+comprimised, please reach out to IDSeq support
+at https://chanzuckerberg.zendesk.com/hc/en-us/requests/new.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		headless, err := cmd.Flags().GetBool("headless")
+		if err != nil {
+			return err
+		}
+		persistent, err := cmd.Flags().GetBool("persistent")
+		if err != nil {
+			return err
+		}
+		return auth.Login(headless, persistent)
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(loginCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// loginCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// loginCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	loginCmd.PersistentFlags().Bool("headless", false, "don't open the login form in a browser")
+	loginCmd.PersistentFlags().Bool("persistent", false, "remain logged in on this device (see description)")
 }

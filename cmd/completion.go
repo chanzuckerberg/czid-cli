@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -43,21 +44,18 @@ $ yourprogram completion fish > ~/.config/fish/completions/yourprogram.fish
 	DisableFlagsInUseLine: true,
 	ValidArgs:             []string{"bash", "zsh", "fish", "powershell"},
 	Args:                  cobra.ExactValidArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		var err error = nil
+	RunE: func(cmd *cobra.Command, args []string) error {
 		switch args[0] {
 		case "bash":
-			err = cmd.Root().GenBashCompletion(os.Stdout)
+			return cmd.Root().GenBashCompletion(os.Stdout)
 		case "zsh":
-			err = cmd.Root().GenZshCompletion(os.Stdout)
+			return cmd.Root().GenZshCompletion(os.Stdout)
 		case "fish":
-			err = cmd.Root().GenFishCompletion(os.Stdout, true)
+			return cmd.Root().GenFishCompletion(os.Stdout, true)
 		case "powershell":
-			err = cmd.Root().GenPowerShellCompletion(os.Stdout)
-		}
-		if err != nil {
-			cmd.PrintErr(err)
-			os.Exit(1)
+			return cmd.Root().GenPowerShellCompletion(os.Stdout)
+		default:
+			return fmt.Errorf("cannot generate completions for %s, must be one of: bash, zsh, fish, powershell", args[0])
 		}
 	},
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
@@ -16,6 +17,10 @@ import (
 )
 
 var clientID string = ""
+
+const refreshTokenKey = "SECRET"
+const accessTokenKey = "ACCESS_TOKEN"
+const expiresAtKey = "EXPIRES_AT"
 
 type deviceCodeResponse struct {
 	DeviceCode              string    `json:"device_code"`
@@ -39,21 +44,30 @@ type tokenResponse struct {
 
 func (t tokenResponse) writeToConfig() error {
 	if t.RefreshToken != "" {
-		viper.Set("refresh_token", t.RefreshToken)
+		viper.Set(refreshTokenKey, t.RefreshToken)
 	}
+	err := viper.WriteConfig()
+	if err != nil {
+		return err
+	}
+	cache, err := util.ViperCache("auth")
 	if t.AccessToken != "" {
-		viper.Set("access_token", t.AccessToken)
+		cache.Set("access_token", t.AccessToken)
 	}
-	viper.Set("expires_at", t.ExpiresAt)
-	return viper.WriteConfig()
+	cache.Set("expires_at", t.ExpiresAt)
+	return cache.WriteConfig()
 }
 
 type errorResponse struct {
-	Error            string `json:"error"`
+	ErrorType        string `json:"error"`
 	ErrorDescription string `json:"error_description"`
 }
 
-func formPost(endpoint string, params map[string]string, r interface{}) (int, errorResponse, error) {
+func (e *errorResponse) Error() string {
+	return fmt.Sprintf("authentication error: %s", e.ErrorDescription)
+}
+
+func formPost(endpoint string, params map[string]string, r interface{}) error {
 	var eR errorResponse
 	data := url.Values{}
 	for k, v := range params {
@@ -63,27 +77,27 @@ func formPost(endpoint string, params map[string]string, r interface{}) (int, er
 
 	req, err := http.NewRequest("POST", endpoint, payload)
 	if err != nil {
-		return 0, eR, err
+		return err
 	}
 
 	req.Header.Add("content-type", "application/x-www-form-urlencoded")
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return res.StatusCode, eR, err
+		return err
 	}
 
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return res.StatusCode, eR, err
+		return err
 	}
 
-	if res.StatusCode < 400 {
-		return res.StatusCode, eR, json.Unmarshal(body, r)
-	} else {
+	if res.StatusCode >= 400 {
 		json.Unmarshal(body, &eR)
-		return res.StatusCode, eR, nil
+		return &eR
+	} else {
+		return json.Unmarshal(body, &r)
 	}
 }
 
@@ -104,26 +118,29 @@ func addSeconds(t time.Time, s int) time.Time {
 	return t.Add(time.Duration(s) * time.Second)
 }
 
-func requestDeviceCode() (deviceCodeResponse, error) {
+func requestDeviceCode(persistent bool) (deviceCodeResponse, error) {
 	var d deviceCodeResponse
 	endpoint := "https://czi-idseq-dev.auth0.com/oauth/device/code"
 	params := map[string]string{
 		"client_id": clientID,
-		"scope":     "openid offline_access",
+		"scope":     "openid",
 		"audience":  "https://czi-idseq-dev.auth0.com/api/v2/",
 	}
+	if persistent {
+		params["scope"] = "openid offline_access"
+	}
 	timeFetched := time.Now()
-	_, _, err := formPost(endpoint, params, &d)
+	err := formPost(endpoint, params, &d)
 	d.ExpiresAt = addSeconds(timeFetched, d.ExpiresIn)
 	return d, err
 }
 
-func requestDeviceActivation(verificantionURIComplete string, headless bool) {
+func promptDeviceActivation(verificantionURIComplete string, headless bool) {
 	if headless {
 		fmt.Printf("please navigate to %s and authenticate\n", verificantionURIComplete)
 	} else {
 		fmt.Printf("directing you to authenticate at %s\n", verificantionURIComplete)
-		time.Sleep(5 * time.Second)
+		time.Sleep(2 * time.Second)
 		openBrowser(verificantionURIComplete)
 	}
 }
@@ -137,23 +154,29 @@ func requestToken(deviceCode string) (tokenResponse, error) {
 		"grant_type":  "urn:ietf:params:oauth:grant-type:device_code",
 	}
 	timeFetched := time.Now()
-	_, _, err := formPost(endpoint, params, &t)
+	err := formPost(endpoint, params, &t)
 	t.ExpiresAt = addSeconds(timeFetched, t.ExpiresIn)
 	return t, err
 }
 
 func pollForTokens(interval time.Duration, expiresAt time.Time, deviceCode string) (tokenResponse, error) {
 	var tR tokenResponse
+	var err error
 	for t := range time.Tick(interval) {
 		if t.After(expiresAt) {
 			return tR, errors.New("expired token")
 		}
-		tR, err := requestToken(deviceCode)
-		if err == nil {
-			return tR, err
+		tR, err = requestToken(deviceCode)
+		if err != nil {
+			serr, ok := err.(*errorResponse)
+			if ok && serr.ErrorType == "authorization_pending" {
+				fmt.Println("waiting for authentication in browser...")
+				continue
+			} else {
+				return tR, err
+			}
 		}
-		fmt.Println(err.Error())
-		fmt.Println("waiting for authentication in browser...")
+		break
 	}
 	return tR, nil
 }
@@ -167,34 +190,50 @@ func refreshAccessToken(refreshToken string) (tokenResponse, error) {
 		"refresh_token": refreshToken,
 	}
 	timeFetched := time.Now()
-	_, _, err := formPost(endpoint, params, &t)
+	err := formPost(endpoint, params, &t)
 	t.ExpiresAt = addSeconds(timeFetched, t.ExpiresIn)
 	return t, err
 }
 
-func getAccessToken() string {
-	accessToken := viper.GetString("access_token")
-	expiresAt := viper.GetTime("expires_at")
+func AccessToken() (string, error) {
+	cache, err := util.ViperCache("auth")
+	if err != nil {
+		return "", nil
+	}
+	accessToken := cache.GetString(accessTokenKey)
+	expiresAt := cache.GetTime(expiresAtKey)
 	if accessToken != "" && expiresAt.After(time.Now()) {
-		return accessToken
+		return accessToken, nil
 	}
-	refreshToken := viper.GetString("refresh_token")
+	refreshToken := viper.GetString(refreshTokenKey)
 	if refreshToken != "" {
-		t, _ := refreshAccessToken(refreshToken)
-		t.writeToConfig()
-		return t.AccessToken
-	} else {
-		log.Fatalf("not authenticated, try running `idseq login` or adding your `refresh_token` to %s manually", viper.GetViper().ConfigFileUsed())
-		return ""
+		t, err := refreshAccessToken(refreshToken)
+		writeErr := t.writeToConfig()
+		if writeErr != nil {
+			log.Printf("warning: credential cache failed")
+		}
+		return t.AccessToken, err
 	}
+	return "", fmt.Errorf("not authenticated, try running `idseq login` or adding your `secret` to %s manually", viper.GetViper().ConfigFileUsed())
 }
 
-func Login() {
-	d, err := requestDeviceCode()
+func Login(headless bool, persistent bool) error {
+	d, err := requestDeviceCode(persistent)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	requestDeviceActivation(d.VerificationURIComplete, false)
+	promptDeviceActivation(d.VerificationURIComplete, headless)
 	t, err := pollForTokens(time.Duration(d.Interval)*time.Second, d.ExpiresAt, d.DeviceCode)
-	t.writeToConfig()
+	if err != nil {
+		return err
+	}
+	err = t.writeToConfig()
+	if err != nil {
+		return err
+	}
+	if persistent {
+		// refresh the access token to make sure the user is authenticated
+		_, err = refreshAccessToken(t.RefreshToken)
+	}
+	return err
 }
