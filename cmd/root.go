@@ -50,6 +50,7 @@ func initConfig() {
 		viper.SetConfigFile(path.Join(configDir, "config.yaml"))
 	}
 
+	viper.SetEnvPrefix("idseq_cli")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
