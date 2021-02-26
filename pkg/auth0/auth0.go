@@ -1,4 +1,5 @@
-package auth
+// Package auth0 provides methods to authenticate with auth0
+package auth0
 
 import (
 	"encoding/json"
@@ -7,7 +8,6 @@ import (
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
 	"github.com/spf13/viper"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os/exec"
@@ -50,11 +50,16 @@ func (t tokenResponse) writeToConfig() error {
 	if err != nil {
 		return err
 	}
-	cache, err := util.ViperCache("auth")
+	cache, err := util.ViperCache()
+	if err != nil {
+		return err
+	}
 	if t.AccessToken != "" {
 		cache.Set("access_token", t.AccessToken)
 	}
-	cache.Set("expires_at", t.ExpiresAt)
+	if t.ExpiresIn != 0 {
+		cache.Set("expires_at", t.ExpiresAt)
+	}
 	return cache.WriteConfig()
 }
 
@@ -94,7 +99,10 @@ func formPost(endpoint string, params map[string]string, r interface{}) error {
 	}
 
 	if res.StatusCode >= 400 {
-		json.Unmarshal(body, &eR)
+		err := json.Unmarshal(body, &eR)
+		if err != nil {
+			return err
+		}
 		return &eR
 	} else {
 		return json.Unmarshal(body, &r)
@@ -141,7 +149,10 @@ func promptDeviceActivation(verificantionURIComplete string, headless bool) {
 	} else {
 		fmt.Printf("directing you to authenticate at %s\n", verificantionURIComplete)
 		time.Sleep(2 * time.Second)
-		openBrowser(verificantionURIComplete)
+		err := openBrowser(verificantionURIComplete)
+		if err != nil {
+			fmt.Printf("error directing you to %s, please navigate to the URL manually", verificantionURIComplete)
+		}
 	}
 }
 
@@ -162,7 +173,9 @@ func requestToken(deviceCode string) (tokenResponse, error) {
 func pollForTokens(interval time.Duration, expiresAt time.Time, deviceCode string) (tokenResponse, error) {
 	var tR tokenResponse
 	var err error
-	for t := range time.Tick(interval) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for t := range ticker.C {
 		if t.After(expiresAt) {
 			return tR, errors.New("expired token")
 		}
@@ -195,28 +208,38 @@ func refreshAccessToken(refreshToken string) (tokenResponse, error) {
 	return t, err
 }
 
+// AccessToken returns a valid auth0 access token
+// If a non-expired access token is found in the cache
+// that token is returned. Otherwise the secret/refresh
+// token from the application config is used to fetch
+// a fresh one. If there is no secret configured this
+// function errors.
 func AccessToken() (string, error) {
-	cache, err := util.ViperCache("auth")
+	cache, err := util.ViperCache()
 	if err != nil {
 		return "", nil
 	}
 	accessToken := cache.GetString(accessTokenKey)
 	expiresAt := cache.GetTime(expiresAtKey)
-	if accessToken != "" && expiresAt.After(time.Now()) {
+	if cache.IsSet(accessTokenKey) && cache.IsSet(expiresAtKey) && expiresAt.After(time.Now()) {
 		return accessToken, nil
 	}
-	refreshToken := viper.GetString(refreshTokenKey)
-	if refreshToken != "" {
+	if cache.IsSet(refreshTokenKey) {
+		refreshToken := viper.GetString(refreshTokenKey)
 		t, err := refreshAccessToken(refreshToken)
 		writeErr := t.writeToConfig()
 		if writeErr != nil {
-			log.Printf("warning: credential cache failed")
+			fmt.Println("warning: credential cache failed")
 		}
 		return t.AccessToken, err
 	}
 	return "", fmt.Errorf("not authenticated, try running `idseq login` or adding your `secret` to %s manually", viper.GetViper().ConfigFileUsed())
 }
 
+// Login performs the auth0 device authorization flow:
+// https://auth0.com/docs/flows/call-your-api-using-the-device-authorization-flow
+// This function prompts the user to navigate to a URL or
+// directs the user there.
 func Login(headless bool, persistent bool) error {
 	d, err := requestDeviceCode(persistent)
 	if err != nil {

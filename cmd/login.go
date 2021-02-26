@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/auth"
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0"
 	"github.com/spf13/cobra"
 )
 
@@ -35,7 +35,7 @@ at https://chanzuckerberg.zendesk.com/hc/en-us/requests/new.`,
 		if err != nil {
 			return err
 		}
-		return auth.Login(headless, persistent)
+		return auth0.Login(headless, persistent)
 	},
 }
 
