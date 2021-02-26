@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -14,6 +12,9 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
+	"github.com/spf13/viper"
 )
 
 var clientID string = ""
@@ -42,15 +43,15 @@ type tokenResponse struct {
 	Scope        string    `json:"scope"`
 }
 
-func (t tokenResponse) writeToConfig() error {
+func (c client) saveToken(t tokenResponse) error {
 	if t.RefreshToken != "" {
-		viper.Set(refreshTokenKey, t.RefreshToken)
+		c.viper.Set(refreshTokenKey, t.RefreshToken)
 	}
-	err := viper.WriteConfig()
+	err := c.viper.WriteConfig()
 	if err != nil {
 		return err
 	}
-	cache, err := util.ViperCache()
+	cache, err := c.getCache()
 	if err != nil {
 		return err
 	}
@@ -109,6 +110,24 @@ func formPost(endpoint string, params map[string]string, r interface{}) error {
 	}
 }
 
+type client struct {
+	formPost func(endpoint string, params map[string]string, r interface{}) error
+	viper    *viper.Viper
+	cache    *viper.Viper
+}
+
+func (c client) getCache() (*viper.Viper, error) {
+	if c.cache != nil {
+		return c.cache, nil
+	}
+	return util.ViperCache()
+}
+
+var defaultClient = client{
+	formPost: formPost,
+	viper:    viper.GetViper(),
+}
+
 func openBrowser(url string) error {
 	switch runtime.GOOS {
 	case "linux":
@@ -126,7 +145,7 @@ func addSeconds(t time.Time, s int) time.Time {
 	return t.Add(time.Duration(s) * time.Second)
 }
 
-func requestDeviceCode(persistent bool) (deviceCodeResponse, error) {
+func (c client) requestDeviceCode(persistent bool) (deviceCodeResponse, error) {
 	var d deviceCodeResponse
 	endpoint := "https://czi-idseq-dev.auth0.com/oauth/device/code"
 	params := map[string]string{
@@ -138,7 +157,7 @@ func requestDeviceCode(persistent bool) (deviceCodeResponse, error) {
 		params["scope"] = "openid offline_access"
 	}
 	timeFetched := time.Now()
-	err := formPost(endpoint, params, &d)
+	err := c.formPost(endpoint, params, &d)
 	d.ExpiresAt = addSeconds(timeFetched, d.ExpiresIn)
 	return d, err
 }
@@ -156,7 +175,7 @@ func promptDeviceActivation(verificantionURIComplete string, headless bool) {
 	}
 }
 
-func requestToken(deviceCode string) (tokenResponse, error) {
+func (c client) requestToken(deviceCode string) (tokenResponse, error) {
 	endpoint := "https://czi-idseq-dev.auth0.com/oauth/token"
 	var t tokenResponse
 	params := map[string]string{
@@ -165,12 +184,12 @@ func requestToken(deviceCode string) (tokenResponse, error) {
 		"grant_type":  "urn:ietf:params:oauth:grant-type:device_code",
 	}
 	timeFetched := time.Now()
-	err := formPost(endpoint, params, &t)
+	err := c.formPost(endpoint, params, &t)
 	t.ExpiresAt = addSeconds(timeFetched, t.ExpiresIn)
 	return t, err
 }
 
-func pollForTokens(interval time.Duration, expiresAt time.Time, deviceCode string) (tokenResponse, error) {
+func (c client) pollForTokens(interval time.Duration, expiresAt time.Time, deviceCode string) (tokenResponse, error) {
 	var tR tokenResponse
 	var err error
 	ticker := time.NewTicker(interval)
@@ -179,7 +198,7 @@ func pollForTokens(interval time.Duration, expiresAt time.Time, deviceCode strin
 		if t.After(expiresAt) {
 			return tR, errors.New("expired token")
 		}
-		tR, err = requestToken(deviceCode)
+		tR, err = c.requestToken(deviceCode)
 		if err != nil {
 			serr, ok := err.(*errorResponse)
 			if ok && serr.ErrorType == "authorization_pending" {
@@ -194,7 +213,7 @@ func pollForTokens(interval time.Duration, expiresAt time.Time, deviceCode strin
 	return tR, nil
 }
 
-func refreshAccessToken(refreshToken string) (tokenResponse, error) {
+func (c client) refreshAccessToken(refreshToken string) (tokenResponse, error) {
 	var t tokenResponse
 	endpoint := "https://czi-idseq-dev.auth0.com/oauth/token"
 	params := map[string]string{
@@ -203,19 +222,13 @@ func refreshAccessToken(refreshToken string) (tokenResponse, error) {
 		"refresh_token": refreshToken,
 	}
 	timeFetched := time.Now()
-	err := formPost(endpoint, params, &t)
+	err := c.formPost(endpoint, params, &t)
 	t.ExpiresAt = addSeconds(timeFetched, t.ExpiresIn)
 	return t, err
 }
 
-// AccessToken returns a valid auth0 access token
-// If a non-expired access token is found in the cache
-// that token is returned. Otherwise the secret/refresh
-// token from the application config is used to fetch
-// a fresh one. If there is no secret configured this
-// function errors.
-func AccessToken() (string, error) {
-	cache, err := util.ViperCache()
+func (c client) accessToken() (string, error) {
+	cache, err := c.getCache()
 	if err != nil {
 		return "", nil
 	}
@@ -225,9 +238,9 @@ func AccessToken() (string, error) {
 		return accessToken, nil
 	}
 	if cache.IsSet(refreshTokenKey) {
-		refreshToken := viper.GetString(refreshTokenKey)
-		t, err := refreshAccessToken(refreshToken)
-		writeErr := t.writeToConfig()
+		refreshToken := c.viper.GetString(refreshTokenKey)
+		t, err := c.refreshAccessToken(refreshToken)
+		writeErr := c.saveToken(t)
 		if writeErr != nil {
 			fmt.Println("warning: credential cache failed")
 		}
@@ -236,33 +249,51 @@ func AccessToken() (string, error) {
 	return "", fmt.Errorf("not authenticated, try running `idseq login` or adding your `secret` to %s manually", viper.GetViper().ConfigFileUsed())
 }
 
-// Login performs the auth0 device authorization flow:
-// https://auth0.com/docs/flows/call-your-api-using-the-device-authorization-flow
-// This function prompts the user to navigate to a URL or
-// directs the user there.
-func Login(headless bool, persistent bool) error {
-	d, err := requestDeviceCode(persistent)
+func (c client) login(headless bool, persistent bool) error {
+	d, err := c.requestDeviceCode(persistent)
 	if err != nil {
 		return err
 	}
 	promptDeviceActivation(d.VerificationURIComplete, headless)
-	t, err := pollForTokens(time.Duration(d.Interval)*time.Second, d.ExpiresAt, d.DeviceCode)
+	t, err := c.pollForTokens(time.Duration(d.Interval)*time.Second, d.ExpiresAt, d.DeviceCode)
 	if err != nil {
 		return err
 	}
-	err = t.writeToConfig()
+	err = c.saveToken(t)
 	if err != nil {
 		return err
 	}
 	if persistent {
 		// refresh the access token to make sure the user is authenticated
-		_, err = refreshAccessToken(t.RefreshToken)
+		_, err = c.refreshAccessToken(t.RefreshToken)
 	}
 	return err
+}
+
+func (c client) secret() (string, bool) {
+	return c.viper.GetString(refreshTokenKey), c.viper.IsSet(refreshTokenKey)
+}
+
+// AccessToken returns a valid auth0 access token
+// If a non-expired access token is found in the cache
+// that token is returned. Otherwise the secret/refresh
+// token from the application config is used to fetch
+// a fresh one. If there is no secret configured this
+// function errors.
+func AccessToken() (string, error) {
+	return defaultClient.accessToken()
+}
+
+// Login performs the auth0 device authorization flow:
+// https://auth0.com/docs/flows/call-your-api-using-the-device-authorization-flow
+// This function prompts the user to navigate to a URL or
+// directs the user there.
+func Login(headless bool, persistent bool) error {
+	return defaultClient.login(headless, persistent)
 }
 
 // Secret returns the auth0 secret/refresh token and a boolean representing
 // whether the secret is defined.
 func Secret() (string, bool) {
-	return viper.GetString(refreshTokenKey), viper.IsSet(refreshTokenKey)
+	return defaultClient.secret()
 }
