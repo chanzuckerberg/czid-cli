@@ -1,0 +1,1 @@
+Using config file: /home/todd/.config/idseq-cli-v2/config.yaml

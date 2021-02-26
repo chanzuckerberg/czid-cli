@@ -260,3 +260,9 @@ func Login(headless bool, persistent bool) error {
 	}
 	return err
 }
+
+// Secret returns the auth0 secret/refresh token and a boolean representing
+// whether the secret is defined.
+func Secret() (string, bool) {
+	return viper.GetString(refreshTokenKey), viper.IsSet(refreshTokenKey)
+}

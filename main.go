@@ -1,7 +1,12 @@
 package main
 
-import "github.com/chanzuckerberg/idseq-cli-v2/cmd"
+import (
+	"log"
+
+	"github.com/chanzuckerberg/idseq-cli-v2/cmd"
+)
 
 func main() {
+	log.SetFlags(0)
 	cmd.Execute()
 }

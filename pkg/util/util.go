@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"sync"
@@ -60,6 +61,13 @@ func ViperCache() (*viper.Viper, error) {
 		return nil, err
 	}
 	v := viper.New()
-	v.SetConfigFile(path.Join(cacheDir, "cache.yaml"))
-	return v, v.SafeWriteConfig()
+	v.AddConfigPath(cacheDir)
+	v.SetConfigName("cache")
+	v.SetConfigType("yaml")
+	err = v.SafeWriteConfig()
+	_, alreadyExists := err.(viper.ConfigFileAlreadyExistsError)
+	if alreadyExists {
+		return v, nil
+	}
+	return v, err
 }

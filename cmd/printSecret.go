@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0"
 	"github.com/spf13/cobra"
 )
 
@@ -20,20 +21,15 @@ can't log in manually.
 WARNING: this is a long lived access token, be extremely
 careful while handling it.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("printSecret called")
+		secret, hasSecret := auth0.Secret()
+		if !hasSecret {
+			fmt.Println("no secret defined, try running 'idseq login' to generate one")
+		} else {
+			fmt.Println(secret)
+		}
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(printSecretCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// printSecretCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// printSecretCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
