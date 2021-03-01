@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"path"
 
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -15,7 +17,6 @@ var cfgFile string
 var RootCmd = &cobra.Command{
 	Use:   "idseq",
 	Short: "A CLI for uploading samples to IDseq",
-	Long:  `A CLI for uploading samples to IDseq`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -33,7 +34,7 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.idseq-cli-v2.yaml)")
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -42,22 +43,18 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
+		configDir, err := util.GetConfigDir()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
-
-		// Search config in home directory with name ".idseq-cli-v2" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".idseq-cli-v2")
+		viper.SetConfigFile(path.Join(configDir, "config.yaml"))
 	}
 
+	viper.SetEnvPrefix("idseq_cli")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		log.Println("Using config file:", viper.ConfigFileUsed())
 	}
 }
