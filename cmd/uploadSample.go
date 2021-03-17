@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq"
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg/upload"
 	"github.com/spf13/cobra"
 )
 
@@ -16,21 +16,24 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("uploadSample called")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// TODO proper sample name
+		sampleName := args[0]
+		r, err := idseq.UploadSample(sampleName)
+		if err != nil {
+			return err
+		}
+
+		uploader := upload.NewUploader(r.Credentials)
+		err = uploader.UploadFile("test.fasta", r.Samples[0].InputFiles[0].S3Path, r.Samples[0].InputFiles[0].MultipartUploadId)
+		if err != nil {
+			return err
+		}
+
+		return idseq.MarkSampleUploaded(r.Samples[0].ID, sampleName)
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(uploadSampleCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// uploadSampleCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// uploadSampleCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

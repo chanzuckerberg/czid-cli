@@ -20,7 +20,7 @@ import (
 var clientID string = ""
 
 const refreshTokenKey = "SECRET"
-const accessTokenKey = "ACCESS_TOKEN"
+const idTokenKey = "TOKEN"
 const expiresAtKey = "EXPIRES_AT"
 
 type deviceCodeResponse struct {
@@ -55,11 +55,11 @@ func (c client) saveToken(t tokenResponse) error {
 	if err != nil {
 		return err
 	}
-	if t.AccessToken != "" {
-		cache.Set("access_token", t.AccessToken)
+	if t.IdToken != "" {
+		cache.Set(idTokenKey, t.IdToken)
 	}
 	if t.ExpiresIn != 0 {
-		cache.Set("expires_at", t.ExpiresAt)
+		cache.Set(expiresAtKey, t.ExpiresAt)
 	}
 	return cache.WriteConfig()
 }
@@ -150,11 +150,11 @@ func (c client) requestDeviceCode(persistent bool) (deviceCodeResponse, error) {
 	endpoint := "https://czi-idseq-dev.auth0.com/oauth/device/code"
 	params := map[string]string{
 		"client_id": clientID,
-		"scope":     "openid",
+		"scope":     "email openid",
 		"audience":  "https://czi-idseq-dev.auth0.com/api/v2/",
 	}
 	if persistent {
-		params["scope"] = "openid offline_access"
+		params["scope"] = "email openid offline_access"
 	}
 	timeFetched := time.Now()
 	err := c.formPost(endpoint, params, &d)
@@ -213,7 +213,7 @@ func (c client) pollForTokens(interval time.Duration, expiresAt time.Time, devic
 	return tR, nil
 }
 
-func (c client) refreshAccessToken(refreshToken string) (tokenResponse, error) {
+func (c client) refreshIdToken(refreshToken string) (tokenResponse, error) {
 	var t tokenResponse
 	endpoint := "https://czi-idseq-dev.auth0.com/oauth/token"
 	params := map[string]string{
@@ -227,24 +227,72 @@ func (c client) refreshAccessToken(refreshToken string) (tokenResponse, error) {
 	return t, err
 }
 
-func (c client) accessToken() (string, error) {
+func authorize(token string) (string, error) {
+	params := map[string]string{
+		"audience":      "https://sandbox.idseq.net",
+		"response_type": "token",
+		"scope":         "openid",
+		"client_id":     clientID,
+		"prompt":        "none",
+	}
+	query := url.Values{}
+	for k, v := range params {
+		query.Set(k, v)
+	}
+
+	u := url.URL{
+		Scheme:   "https",
+		Host:     "czi-idseq-dev.auth0.com",
+		Path:     "authorize",
+		RawQuery: query.Encode(),
+	}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+
+	fmt.Println(string(body))
+
+	fmt.Printf("%d\n", res.StatusCode)
+	return "", nil
+}
+
+func Authorize() (string, error) {
+	token, err := IdToken()
+	if err != nil {
+		return "", err
+	}
+	return authorize(token)
+}
+
+func (c client) idToken() (string, error) {
 	cache, err := c.getCache()
 	if err != nil {
 		return "", nil
 	}
-	accessToken := cache.GetString(accessTokenKey)
+	idToken := cache.GetString(idTokenKey)
 	expiresAt := cache.GetTime(expiresAtKey)
-	if cache.IsSet(accessTokenKey) && cache.IsSet(expiresAtKey) && expiresAt.After(time.Now()) {
-		return accessToken, nil
+	if cache.IsSet(idTokenKey) && cache.IsSet(expiresAtKey) && expiresAt.After(time.Now()) {
+		return idToken, nil
 	}
 	if cache.IsSet(refreshTokenKey) {
 		refreshToken := c.viper.GetString(refreshTokenKey)
-		t, err := c.refreshAccessToken(refreshToken)
+		t, err := c.refreshIdToken(refreshToken)
 		writeErr := c.saveToken(t)
 		if writeErr != nil {
 			fmt.Println("warning: credential cache failed")
 		}
-		return t.AccessToken, err
+		return t.IdToken, err
 	}
 	return "", fmt.Errorf("not authenticated, try running `idseq login` or adding your `secret` to %s manually", viper.GetViper().ConfigFileUsed())
 }
@@ -265,7 +313,7 @@ func (c client) login(headless bool, persistent bool) error {
 	}
 	if persistent {
 		// refresh the access token to make sure the user is authenticated
-		_, err = c.refreshAccessToken(t.RefreshToken)
+		_, err = c.refreshIdToken(t.RefreshToken)
 	}
 	return err
 }
@@ -274,14 +322,14 @@ func (c client) secret() (string, bool) {
 	return c.viper.GetString(refreshTokenKey), c.viper.IsSet(refreshTokenKey)
 }
 
-// AccessToken returns a valid auth0 access token
+// IdToken returns a valid auth0 access token
 // If a non-expired access token is found in the cache
 // that token is returned. Otherwise the secret/refresh
 // token from the application config is used to fetch
 // a fresh one. If there is no secret configured this
 // function errors.
-func AccessToken() (string, error) {
-	return defaultClient.accessToken()
+func IdToken() (string, error) {
+	return defaultClient.idToken()
 }
 
 // Login performs the auth0 device authorization flow:

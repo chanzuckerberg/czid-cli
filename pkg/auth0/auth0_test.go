@@ -36,7 +36,7 @@ func mockFormPost(endpoint string, params map[string]string, r interface{}) erro
 		resp := fmt.Sprintf(`{
           "access_token":"access_token",
           %s
-          "id_token":"",
+          "id_token":"id_token",
           "scope":"openid",
           "expires_in": 800
         }`, refreshToken)
@@ -68,8 +68,8 @@ func TestLoginPersistent(t *testing.T) {
 	if v.GetString("secret") != "refresh_token" {
 		t.Errorf("secret should be 'refresh_token' but it was '%s'", v.GetString("secret"))
 	}
-	if cache.GetString("ACCESS_TOKEN") != "access_token" {
-		t.Errorf("expected cached access token to be 'access_token' but it was '%s'", cache.GetString("ACCESS_TOKEN"))
+	if cache.GetString("TOKEN") != "id_token" {
+		t.Errorf("expected cached token to be 'id_token' but it was '%s'", cache.GetString("TOKEN"))
 	}
 }
 
@@ -103,8 +103,8 @@ func TestLogin(t *testing.T) {
 	if v.IsSet("secret") {
 		t.Error("secret should not be defined if persistent is false")
 	}
-	if cache.GetString("ACCESS_TOKEN") != "access_token" {
-		t.Errorf("expected cached access token to be 'access_token' but it was '%s'", cache.GetString("ACCESS_TOKEN"))
+	if cache.GetString("TOKEN") != "id_token" {
+		t.Errorf("expected cached token to be 'id_token' but it was '%s'", cache.GetString("TOKEN"))
 	}
 }
 

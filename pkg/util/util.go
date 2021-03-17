@@ -1,8 +1,10 @@
 package util
 
 import (
+	"fmt"
 	"os"
 	"path"
+	"runtime"
 	"sync"
 
 	"github.com/spf13/viper"
@@ -43,6 +45,14 @@ func GetCacheDir() (string, error) {
 	return cacheDir, MkdirIfNotExists(cacheDir)
 }
 
+// TrimLeadingSlash trims the leading slash from a string if one is present
+func TrimLeadingSlash(s string) string {
+	if len(s) == 0 || s[0] != '/' {
+		return s
+	}
+	return s[1:]
+}
+
 var viperCache *viper.Viper
 var viperCacheMut sync.Mutex
 
@@ -66,7 +76,14 @@ func ViperCache() (*viper.Viper, error) {
 	err = v.SafeWriteConfig()
 	_, alreadyExists := err.(viper.ConfigFileAlreadyExistsError)
 	if alreadyExists {
-		return v, nil
+		return v, v.ReadInConfig()
 	}
 	return v, err
+}
+
+func Tune() {
+	fmt.Println(runtime.NumCPU())
+	var memStats runtime.MemStats
+	runtime.ReadMemStats(&memStats)
+	fmt.Printf("%v\n", memStats.TotalAlloc)
 }

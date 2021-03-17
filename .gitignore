@@ -4,5 +4,6 @@ dist
 coverage.txt
 bin
 idseq-cli-v2
-idseq
+/idseq
 .env
+test.fasta*
