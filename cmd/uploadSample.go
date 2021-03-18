@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq"
@@ -15,6 +14,7 @@ var projectName string
 var sampleName string
 var r1 string
 var r2 string
+var metadataCSVPath string
 
 // uploadSampleCmd represents the uploadSample command
 var uploadSampleCmd = &cobra.Command{
@@ -36,25 +36,34 @@ to quickly create a Cobra application.`,
 		if r1 == r2 {
 			return errors.New("r1 and r2 cannot have the same filename")
 		}
-		projects, err := idseq.ListProjects()
+		projectID, err := idseq.GetProjectID(projectName)
 		if err != nil {
 			return err
 		}
-		var projectId int
-		for _, project := range projects.Projects {
-			if project.Name == projectName {
-				projectId = project.Id
-				break
-			}
-		}
-		if projectId == 0 {
-			return fmt.Errorf("project '%s' not found", projectName)
-		}
+
 		samples := []idseq.Sample{{
 			Name:      sampleName,
-			ProjectID: projectId,
+			ProjectID: projectID,
 		}}
-		samplesMetadata := idseq.SamplesMetadata{sampleName: metadata}
+		samplesMetadata := idseq.SamplesMetadata{}
+		if metadataCSVPath != "" {
+			samplesMetadata, err = idseq.CSVMetadata(metadataCSVPath)
+			if err != nil {
+				return err
+			}
+			for sN := range samplesMetadata {
+				if sN != sampleName {
+					delete(samplesMetadata, sN)
+				}
+			}
+		}
+		if samplesMetadata[sampleName] == nil {
+			samplesMetadata[sampleName] = metadata
+		} else {
+			for name, value := range metadata {
+				samplesMetadata[sampleName][name] = value
+			}
+		}
 		vm := idseq.ToValidateForm(samplesMetadata)
 		validationResp, err := idseq.ValidateCSV(samples, vm)
 		if err != nil {
@@ -97,4 +106,5 @@ func init() {
 	uploadSampleCmd.Flags().StringVar(&r1, "r1", "", "Read 1 file path")
 	uploadSampleCmd.Flags().StringVar(&r2, "r2", "", "Read 2 file path (optional)")
 	uploadSampleCmd.Flags().StringVarP(&projectName, "project", "p", "", "Project name. Make sure the project is created on the website")
+	uploadSampleCmd.Flags().StringVar(&metadataCSVPath, "metadata-csv", "", "Metadata local file path.")
 }

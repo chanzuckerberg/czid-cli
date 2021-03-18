@@ -290,9 +290,24 @@ type listProjectsResp struct {
 	Projects []project `json:"projects"`
 }
 
-func ListProjects() (listProjectsResp, error) {
+func GetProjectID(projectName string) (int, error) {
 	query := url.Values{"basic": []string{"true"}}
 	var resp listProjectsResp
 	err := request("GET", "projects.json", query.Encode(), listProjectsRes{}, &resp)
-	return resp, err
+	if err != nil {
+		return 0, err
+	}
+	var projectId int
+	found := false
+	for _, project := range resp.Projects {
+		if project.Name == projectName {
+			projectId = project.Id
+			found = true
+			break
+		}
+	}
+	if !found {
+		return projectId, fmt.Errorf("project '%s' not found", projectName)
+	}
+	return projectId, nil
 }
