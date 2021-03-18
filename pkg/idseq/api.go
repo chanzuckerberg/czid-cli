@@ -18,7 +18,7 @@ import (
 var baseURL = ""
 var roleARN = ""
 
-func request(method string, path string, reqBody interface{}, resBody interface{}) error {
+func request(method string, path string, query string, reqBody interface{}, resBody interface{}) error {
 	token, err := auth0.IdToken()
 	if err != nil {
 		return err
@@ -34,6 +34,7 @@ func request(method string, path string, reqBody interface{}, resBody interface{
 		return err
 	}
 	u.Path = path
+	u.RawQuery = query
 
 	req, err := http.NewRequest(method, u.String(), bytes.NewReader(reqBodyBytes))
 	if err != nil {
@@ -186,7 +187,7 @@ func ValidateCSV(samples []Sample, vM validationMetadata) (validateCSVRes, error
 
 	var resBody validateCSVRes
 
-	err := request("POST", "metadata/validate_csv_for_new_samples.json", reqBody, &resBody)
+	err := request("POST", "metadata/validate_csv_for_new_samples.json", "", reqBody, &resBody)
 	if err != nil {
 		return resBody, err
 	}
@@ -251,7 +252,7 @@ func UploadSample(sampleName string, samplesMetadata SamplesMetadata, inputFiles
 		}
 	}
 	var resBody samplesRes
-	err := request("POST", "samples/bulk_upload_with_metadata.json", reqBody, &resBody)
+	err := request("POST", "samples/bulk_upload_with_metadata.json", "", reqBody, &resBody)
 	return resBody, err
 }
 
@@ -277,5 +278,21 @@ func MarkSampleUploaded(sampleId int, sampleName string) error {
 	}
 
 	var res updateRequest
-	return request("PUT", fmt.Sprintf("samples/%d.json", sampleId), req, &res)
+	return request("PUT", fmt.Sprintf("samples/%d.json", sampleId), "", req, &res)
+}
+
+type listProjectsRes struct{}
+type project struct {
+	Name string `json:"name"`
+	Id   int    `json:"id"`
+}
+type listProjectsResp struct {
+	Projects []project `json:"projects"`
+}
+
+func ListProjects() (listProjectsResp, error) {
+	query := url.Values{"basic": []string{"true"}}
+	var resp listProjectsResp
+	err := request("GET", "projects.json", query.Encode(), listProjectsRes{}, &resp)
+	return resp, err
 }

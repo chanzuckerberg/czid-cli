@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
+	"os"
 
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq"
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/upload"
@@ -9,6 +11,7 @@ import (
 )
 
 var metadata idseq.Metadata
+var projectName string
 var sampleName string
 var r1 string
 var r2 string
@@ -24,15 +27,32 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if projectName == "" {
+			return errors.New("missing required argument project")
+		}
 		if r1 == "" {
 			return errors.New("missing required argument r1")
 		}
 		if r1 == r2 {
 			return errors.New("r1 and r2 cannot have the same filename")
 		}
+		projects, err := idseq.ListProjects()
+		if err != nil {
+			return err
+		}
+		var projectId int
+		for _, project := range projects.Projects {
+			if project.Name == projectName {
+				projectId = project.Id
+				break
+			}
+		}
+		if projectId == 0 {
+			return fmt.Errorf("project '%s' not found", projectName)
+		}
 		samples := []idseq.Sample{{
 			Name:      sampleName,
-			ProjectID: 6,
+			ProjectID: projectId,
 		}}
 		samplesMetadata := idseq.SamplesMetadata{sampleName: metadata}
 		vm := idseq.ToValidateForm(samplesMetadata)
@@ -41,6 +61,9 @@ to quickly create a Cobra application.`,
 			return err
 		}
 		validationResp.Issues.FriendlyPrint()
+		if len(validationResp.Issues.Errors) > 0 {
+			os.Exit(1)
+		}
 		inputFiles := []string{r1}
 		if r2 != "" {
 			inputFiles = append(inputFiles, r2)
@@ -71,6 +94,7 @@ func init() {
 	RootCmd.AddCommand(uploadSampleCmd)
 	uploadSampleCmd.Flags().StringToStringVarP(&metadata, "metadatum", "m", map[string]string{}, "metadatum name and value for your sample, ex. 'host=Human'")
 	uploadSampleCmd.Flags().StringVarP(&sampleName, "sample-name", "s", "", "sample name")
-	uploadSampleCmd.Flags().StringVar(&r1, "r1", "", "Read 1 file path. Could be a local file or s3 path")
-	uploadSampleCmd.Flags().StringVar(&r2, "r2", "", "Read 2 file path (optional). Could be a local file or s3 path")
+	uploadSampleCmd.Flags().StringVar(&r1, "r1", "", "Read 1 file path")
+	uploadSampleCmd.Flags().StringVar(&r2, "r2", "", "Read 2 file path (optional)")
+	uploadSampleCmd.Flags().StringVarP(&projectName, "project", "p", "", "Project name. Make sure the project is created on the website")
 }
