@@ -1,8 +1,11 @@
 package idseq
 
+// This file is for interracting with the idseq API
+
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -58,42 +61,127 @@ func request(method string, path string, reqBody interface{}, resBody interface{
 	return json.Unmarshal(resBodyBytes, resBody)
 }
 
-type sample struct {
+type Sample struct {
 	Name      string `json:"name"`
 	ProjectID int    `json:"project_id"`
 }
 
-type metadata struct {
+type validationMetadata struct {
 	Headers []string   `json:"headers"`
 	Rows    [][]string `json:"rows"`
 }
 
 type validateCSVReq struct {
-	Metadata metadata `json:"metadata"`
-	Samples  []sample `json:"samples"`
+	Metadata validationMetadata `json:"metadata"`
+	Samples  []Sample           `json:"samples"`
 }
 
-// TODO: handle issue groups
-type issues struct {
-	Errors   []string `json:"errors"`
-	Warnings []string `json:"warnings"`
+type metadataIssueRow struct {
+	items []string
+}
+
+func (m *metadataIssueRow) UnmarshalJSON(data []byte) error {
+	var v []interface{}
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	m.items = make([]string, len(v))
+	for i, item := range v {
+		switch item := item.(type) {
+		case string:
+			m.items[i] = item
+		case float64:
+			m.items[i] = fmt.Sprint(item)
+		default:
+			return fmt.Errorf("expected elements of metadata issue rows to be strings or numbers but %s contained an element of a different type", string(data))
+		}
+	}
+
+	return nil
+}
+
+type detailedMetadataIssue struct {
+	Caption string             `json:"caption"`
+	Rows    []metadataIssueRow `json:"rows"`
+	Headers []string           `json:"headers"`
+	isGroup bool
+}
+
+type metadataIssue struct {
+	StringError   string
+	DetailedIssue detailedMetadataIssue
+}
+
+func (mI *metadataIssue) UnmarshalJSON(data []byte) error {
+	var v interface{}
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	switch v := v.(type) {
+	case string:
+		mI.StringError = v
+	case map[string]interface{}:
+		var dI detailedMetadataIssue
+		if err := json.Unmarshal(data, &dI); err != nil {
+			return err
+		}
+		mI.DetailedIssue = dI
+	default:
+		return errors.New("unable to parse metadataIssue")
+	}
+	return nil
+}
+
+func (m metadataIssue) FriendlyPrint() {
+	if m.StringError != "" {
+		fmt.Println(m.StringError)
+	} else {
+		fmt.Printf("  %s\n", m.DetailedIssue.Caption)
+		for _, row := range m.DetailedIssue.Rows {
+			for i, header := range m.DetailedIssue.Headers {
+				fmt.Printf("      %s: %s\n", header, row.items[i])
+			}
+			fmt.Println("")
+		}
+	}
+	fmt.Println("")
+}
+
+type Issues struct {
+	Errors   []metadataIssue `json:"errors"`
+	Warnings []metadataIssue `json:"warnings"`
+}
+
+func (i Issues) FriendlyPrint() {
+	if len(i.Errors) == 0 && len(i.Warnings) == 0 {
+		return
+	}
+	fmt.Printf("found %d errors and %d warnings\n\n", len(i.Errors), len(i.Warnings))
+	if len(i.Errors) > 0 {
+		fmt.Println("errors:")
+		for _, issue := range i.Errors {
+			issue.FriendlyPrint()
+		}
+	}
+	if len(i.Warnings) > 0 {
+		fmt.Println("warnings:")
+		for _, issue := range i.Warnings {
+			issue.FriendlyPrint()
+		}
+	}
+
 }
 
 type validateCSVRes struct {
 	Status string `json:"status"`
-	Issues issues `json:"issues"`
+	Issues Issues `json:"issues"`
 }
 
-func ValidateCSV() (validateCSVRes, error) {
+func ValidateCSV(samples []Sample, vM validationMetadata) (validateCSVRes, error) {
 	reqBody := validateCSVReq{
-		Metadata: metadata{
-			Headers: []string{},
-			Rows:    [][]string{},
-		},
-		Samples: []sample{{
-			Name:      "foo",
-			ProjectID: 6,
-		}},
+		Metadata: vM,
+		Samples:  samples,
 	}
 
 	var resBody validateCSVRes
@@ -142,30 +230,25 @@ type samplesRes struct {
 	Samples     []sampleRes     `json:"samples"`
 }
 
-func UploadSample(sampleName string) (samplesRes, error) {
+func UploadSample(sampleName string, samplesMetadata SamplesMetadata, inputFiles []string) (samplesRes, error) {
 	reqBody := samplesReq{
 		Samples: []uploadableSample{{
-			Name:      sampleName,
-			ProjectID: 6,
-			InputFileAttributes: []inputFileAttribute{{
-				Name:       "test.fasta",
-				Source:     "test.fasta",
-				SourceType: "local",
-				Parts:      "test.fasta",
-			}},
-			HostGenomeName: "human",
-			Status:         "created",
+			Name:                sampleName,
+			ProjectID:           6,
+			InputFileAttributes: make([]inputFileAttribute, len(inputFiles)),
+			HostGenomeName:      "human",
+			Status:              "created",
 		}},
-		Metadata: map[string]map[string]string{
-			sampleName: {
-				"Collection Date":     "2021-03",
-				"Collection Location": "California, USA",
-				"Nucleotide Type":     "DNA",
-				"Sample Type":         "Cerebrospinal fluid",
-				"Water Control":       "No",
-			},
-		},
-		Client: "0.8.10",
+		Metadata: samplesMetadata,
+		Client:   "0.8.10",
+	}
+	for i, inputFile := range inputFiles {
+		reqBody.Samples[0].InputFileAttributes[i] = inputFileAttribute{
+			Name:       inputFile,
+			Source:     inputFile,
+			SourceType: "local",
+			Parts:      "test.fasta",
+		}
 	}
 	var resBody samplesRes
 	err := request("POST", "samples/bulk_upload_with_metadata.json", reqBody, &resBody)
