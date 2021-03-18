@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"regexp"
 )
 
 type Metadata = map[string]string
@@ -80,4 +82,76 @@ func CSVMetadata(csvpath string) (SamplesMetadata, error) {
 		samplesMetadata[sampleName] = metadata
 	}
 	return samplesMetadata, nil
+}
+
+var inputExp = regexp.MustCompile("\\.(fasta|fa|fastq)(\\.gz)?$")
+
+func IsInput(path string) bool {
+	return inputExp.MatchString(path)
+}
+
+var sampleNameExp = regexp.MustCompile("(_R[12])?\\.(fasta|fa|fastq)(\\.gz)?$")
+
+func ToSampleName(path string) string {
+	return sampleNameExp.ReplaceAllString(filepath.Base(path), "")
+}
+
+var r1Exp = regexp.MustCompile("_R1\\.(fasta|fa|fastq)(\\.gz)?$")
+
+func IsR1(path string) bool {
+	return r1Exp.MatchString(path)
+}
+
+var r2Exp = regexp.MustCompile("_R2\\.(fasta|fa|fastq)(\\.gz)?$")
+
+func IsR2(path string) bool {
+	return r2Exp.MatchString(path)
+}
+
+type SampleFiles struct {
+	R1     string
+	R2     string
+	Single string
+}
+
+func SamplesFromDir(directory string) (map[string]SampleFiles, error) {
+	pairs := make(map[string]SampleFiles)
+	err := filepath.Walk(directory, func(path string, f os.FileInfo, err error) error {
+		if match := IsInput(path); match {
+			sampleName := ToSampleName(path)
+			sampleFiles := pairs[sampleName]
+
+			if IsR1(path) {
+				if sampleFiles.Single != "" {
+					return fmt.Errorf("found R1 file and single end file for sample '%s': %s, %s", sampleName, path, sampleFiles.Single)
+				}
+				if sampleFiles.R1 != "" {
+					return fmt.Errorf("found multiple R1 files for sample '%s': %s, %s", sampleName, path, sampleFiles.R1)
+				}
+				sampleFiles.R1 = path
+			} else if IsR2(path) {
+				if sampleFiles.Single != "" {
+					return fmt.Errorf("found R2 file and single end file for sample '%s': %s, %s", sampleName, path, sampleFiles.Single)
+				}
+				if sampleFiles.R2 != "" {
+					return fmt.Errorf("found multiple R2 files for sample '%s': %s, %s", sampleName, path, sampleFiles.R2)
+				}
+				sampleFiles.R2 = path
+			} else {
+				if sampleFiles.R1 != "" {
+					return fmt.Errorf("found R1 file and single end file for sample '%s': %s, %s", sampleName, path, sampleFiles.R1)
+				}
+				if sampleFiles.R2 != "" {
+					return fmt.Errorf("found R2 file and single end file for sample '%s': %s, %s", sampleName, path, sampleFiles.R2)
+				}
+				if sampleFiles.Single != "" {
+					return fmt.Errorf("found multiple single end files for sample '%s': %s, %s", sampleName, path, sampleFiles.Single)
+				}
+				sampleFiles.Single = path
+			}
+			pairs[sampleName] = sampleFiles
+		}
+		return err
+	})
+	return pairs, err
 }
