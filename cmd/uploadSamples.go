@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq"
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg/upload"
 	"github.com/spf13/cobra"
 )
 
@@ -75,13 +77,59 @@ var uploadSamplesCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		r, err := idseq.UploadSample(sampleName, samplesMetadata, inputFiles)
+		uploadableSamples := []idseq.UploadableSample{}
+		for sampleName, sF := range sampleFiles {
+			inputFileAttributes := []idseq.InputFileAttribute{}
+			if sF.Single != "" {
+				inputFileAttributes = append(inputFileAttributes, idseq.NewInputFile(sF.Single))
+			} else {
+				inputFileAttributes = append(inputFileAttributes, idseq.NewInputFile(sF.R1))
+				inputFileAttributes = append(inputFileAttributes, idseq.NewInputFile(sF.R2))
+			}
+
+			hostGenome := samplesMetadata[sampleName]["Host Organism"]
+			uploadableSamples = append(uploadableSamples, idseq.UploadableSample{
+				Name:                sampleName,
+				ProjectID:           projectID,
+				HostGenomeName:      hostGenome,
+				InputFileAttributes: inputFileAttributes,
+				Status:              "created",
+			})
+		}
+
+		r, err := idseq.UploadSample(uploadableSamples, samplesMetadata)
+		if err != nil {
+			return err
+		}
+
+		u := upload.NewUploader(r.Credentials)
+		for _, sample := range r.Samples {
+			sF := sampleFiles[sample.Name]
+			for _, inputFile := range sample.InputFiles {
+				filename := ""
+				if filepath.Base(sF.R1) == filepath.Base(inputFile.S3Path) {
+					filename = sF.R1
+				} else if filepath.Base(sF.R2) == filepath.Base(inputFile.S3Path) {
+					filename = sF.R2
+				} else {
+					filename = sF.Single
+				}
+				err := u.UploadFile(filename, inputFile.S3Path, inputFile.MultipartUploadId)
+				if err != nil {
+					return err
+				}
+			}
+			err := idseq.MarkSampleUploaded(sample.ID, sample.Name)
+			if err != nil {
+				return err
+			}
+		}
 		return err
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(uploadSamplesCmd)
+	shortReadMNGSCmd.AddCommand(uploadSamplesCmd)
 
 	uploadSamplesCmd.Flags().StringToStringVarP(&metadata, "metadatum", "m", map[string]string{}, "metadatum name and value for your sample, ex. 'host=Human'")
 	uploadSamplesCmd.Flags().StringVarP(&projectName, "project", "p", "", "Project name. Make sure the project is created on the website")

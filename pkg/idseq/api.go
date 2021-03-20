@@ -10,8 +10,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path/filepath"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg"
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0"
 )
 
@@ -195,23 +197,32 @@ func ValidateCSV(samples []Sample, vM validationMetadata) (validateCSVRes, error
 	return resBody, nil
 }
 
-type inputFileAttribute struct {
+type InputFileAttribute struct {
 	Name       string `json:"name"`
 	Source     string `json:"source"`
 	SourceType string `json:"source_type"`
 	Parts      string `json:"parts"`
 }
 
-type uploadableSample struct {
+func NewInputFile(filename string) InputFileAttribute {
+	return InputFileAttribute{
+		Name:       filepath.Base(filename),
+		Source:     filepath.Base(filename),
+		SourceType: "local",
+		Parts:      filepath.Base(filename),
+	}
+}
+
+type UploadableSample struct {
 	Name                string               `json:"name"`
 	ProjectID           int                  `json:"project_id"`
-	InputFileAttributes []inputFileAttribute `json:"input_files_attributes"`
+	InputFileAttributes []InputFileAttribute `json:"input_files_attributes"`
 	HostGenomeName      string               `json:"host_genome_name"`
 	Status              string               `json:"status"`
 }
 
 type samplesReq struct {
-	Samples  []uploadableSample           `json:"samples"`
+	Samples  []UploadableSample           `json:"samples"`
 	Metadata map[string]map[string]string `json:"metadata"`
 	Client   string                       `json:"client"`
 }
@@ -222,6 +233,7 @@ type inputFile struct {
 }
 
 type sampleRes struct {
+	Name       string      `json:"name"`
 	ID         int         `json:"id"`
 	InputFiles []inputFile `json:"input_files"`
 }
@@ -231,25 +243,11 @@ type samplesRes struct {
 	Samples     []sampleRes     `json:"samples"`
 }
 
-func UploadSample(sampleName string, samplesMetadata SamplesMetadata, inputFiles []string) (samplesRes, error) {
+func UploadSample(samples []UploadableSample, samplesMetadata SamplesMetadata) (samplesRes, error) {
 	reqBody := samplesReq{
-		Samples: []uploadableSample{{
-			Name:                sampleName,
-			ProjectID:           6,
-			InputFileAttributes: make([]inputFileAttribute, len(inputFiles)),
-			HostGenomeName:      "human",
-			Status:              "created",
-		}},
+		Samples:  samples,
 		Metadata: samplesMetadata,
-		Client:   "0.8.10",
-	}
-	for i, inputFile := range inputFiles {
-		reqBody.Samples[0].InputFileAttributes[i] = inputFileAttribute{
-			Name:       inputFile,
-			Source:     inputFile,
-			SourceType: "local",
-			Parts:      "test.fasta",
-		}
+		Client:   pkg.Version,
 	}
 	var resBody samplesRes
 	err := request("POST", "samples/bulk_upload_with_metadata.json", "", reqBody, &resBody)

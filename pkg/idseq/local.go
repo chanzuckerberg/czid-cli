@@ -153,5 +153,13 @@ func SamplesFromDir(directory string) (map[string]SampleFiles, error) {
 		}
 		return err
 	})
+	for sampleName, pair := range pairs {
+		if pair.R1 != "" && pair.R2 == "" {
+			return pairs, fmt.Errorf("found R1 but not R2 for sample '%s': %s", sampleName, pair.R1)
+		}
+		if pair.R1 == "" && pair.R2 != "" {
+			return pairs, fmt.Errorf("found R2 but not R1 for sample '%s': %s", sampleName, pair.R2)
+		}
+	}
 	return pairs, err
 }

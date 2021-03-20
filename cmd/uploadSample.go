@@ -83,7 +83,21 @@ to quickly create a Cobra application.`,
 		if r2path != "" {
 			inputFiles = append(inputFiles, r2path)
 		}
-		r, err := idseq.UploadSample(sampleName, samplesMetadata, inputFiles)
+
+		inputFileAttributes := make([]idseq.InputFileAttribute, len(inputFiles))
+		for i, inputFile := range inputFiles {
+			inputFileAttributes[i] = idseq.NewInputFile(inputFile)
+		}
+
+		uploadableSamples := []idseq.UploadableSample{{
+			Name:                sampleName,
+			ProjectID:           projectID,
+			HostGenomeName:      samplesMetadata[sampleName]["Host Organism"],
+			InputFileAttributes: inputFileAttributes,
+			Status:              "created",
+		}}
+
+		r, err := idseq.UploadSample(uploadableSamples, samplesMetadata)
 		if err != nil {
 			return err
 		}
@@ -110,7 +124,7 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	RootCmd.AddCommand(uploadSampleCmd)
+	shortReadMNGSCmd.AddCommand(uploadSampleCmd)
 	uploadSampleCmd.Flags().StringToStringVarP(&metadata, "metadatum", "m", map[string]string{}, "metadatum name and value for your sample, ex. 'host=Human'")
 	uploadSampleCmd.Flags().StringVarP(&sampleName, "sample-name", "s", "", "Sample name. Optional, defaults to the base file name of r1path with extensions and _R1 removed")
 	uploadSampleCmd.Flags().StringVarP(&projectName, "project", "p", "", "Project name. Make sure the project is created on the website")
