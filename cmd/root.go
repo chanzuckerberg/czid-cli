@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/chanzuckerberg/idseq-cli-v2/cmd/shortReadMNGS"
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -17,6 +18,10 @@ var cfgFile string
 var RootCmd = &cobra.Command{
 	Use:   "idseq",
 	Short: "A CLI for uploading samples to IDseq",
+}
+
+func init() {
+	RootCmd.AddCommand(shortReadMNGS.ShortReadMNGSCmd)
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

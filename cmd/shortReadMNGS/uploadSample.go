@@ -1,4 +1,4 @@
-package cmd
+package shortReadMNGS
 
 import (
 	"errors"
@@ -9,10 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var stringMetadata map[string]string
-var projectName string
 var sampleName string
-var metadataCSVPath string
 
 // uploadSampleCmd represents the uploadSample command
 var uploadSampleCmd = &cobra.Command{
@@ -129,9 +126,7 @@ var uploadSampleCmd = &cobra.Command{
 }
 
 func init() {
-	shortReadMNGSCmd.AddCommand(uploadSampleCmd)
-	uploadSampleCmd.Flags().StringToStringVarP(&stringMetadata, "metadatum", "m", map[string]string{}, "metadatum name and value for your sample, ex. 'host=Human'")
+	ShortReadMNGSCmd.AddCommand(uploadSampleCmd)
+	loadSharedFlags(uploadSampleCmd)
 	uploadSampleCmd.Flags().StringVarP(&sampleName, "sample-name", "s", "", "Sample name. Optional, defaults to the base file name of r1path with extensions and _R1 removed")
-	uploadSampleCmd.Flags().StringVarP(&projectName, "project", "p", "", "Project name. Make sure the project is created on the website")
-	uploadSampleCmd.Flags().StringVar(&metadataCSVPath, "metadata-csv", "", "Metadata local file path.")
 }

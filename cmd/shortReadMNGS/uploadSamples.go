@@ -1,4 +1,4 @@
-package cmd
+package shortReadMNGS
 
 import (
 	"errors"
@@ -137,9 +137,6 @@ var uploadSamplesCmd = &cobra.Command{
 }
 
 func init() {
-	shortReadMNGSCmd.AddCommand(uploadSamplesCmd)
-
-	uploadSamplesCmd.Flags().StringToStringVarP(&stringMetadata, "metadatum", "m", map[string]string{}, "metadatum name and value for your sample, ex. 'host=Human'")
-	uploadSamplesCmd.Flags().StringVarP(&projectName, "project", "p", "", "Project name. Make sure the project is created on the website")
-	uploadSamplesCmd.Flags().StringVar(&metadataCSVPath, "metadata-csv", "", "Metadata local file path.")
+	ShortReadMNGSCmd.AddCommand(uploadSamplesCmd)
+	loadSharedFlags(uploadSamplesCmd)
 }
