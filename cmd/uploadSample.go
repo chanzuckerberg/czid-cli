@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var metadata idseq.Metadata
+var stringMetadata map[string]string
 var projectName string
 var sampleName string
 var metadataCSVPath string
@@ -17,19 +17,18 @@ var metadataCSVPath string
 // uploadSampleCmd represents the uploadSample command
 var uploadSampleCmd = &cobra.Command{
 	Use:   "upload-sample [r1path] [r2path]?",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Upload a single sample",
+	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if projectName == "" {
 			return errors.New("missing required argument project")
 		}
 		if len(args) == 0 {
 			return errors.New("missing required argument r1path")
+		}
+		metadata := make(idseq.Metadata, len(stringMetadata))
+		for k, v := range stringMetadata {
+			metadata[k] = v
 		}
 		r1path := args[0]
 		r2path := ""
@@ -70,6 +69,12 @@ to quickly create a Cobra application.`,
 				samplesMetadata[sampleName][name] = value
 			}
 		}
+
+		err = idseq.GeoSearchSuggestions(&samplesMetadata)
+		if err != nil {
+			return err
+		}
+
 		vm := idseq.ToValidateForm(samplesMetadata)
 		validationResp, err := idseq.ValidateCSV(samples, vm)
 		if err != nil {
@@ -92,7 +97,7 @@ to quickly create a Cobra application.`,
 		uploadableSamples := []idseq.UploadableSample{{
 			Name:                sampleName,
 			ProjectID:           projectID,
-			HostGenomeName:      samplesMetadata[sampleName]["Host Organism"],
+			HostGenomeName:      samplesMetadata[sampleName]["Host Organism"].(string),
 			InputFileAttributes: inputFileAttributes,
 			Status:              "created",
 		}}
@@ -125,7 +130,7 @@ to quickly create a Cobra application.`,
 
 func init() {
 	shortReadMNGSCmd.AddCommand(uploadSampleCmd)
-	uploadSampleCmd.Flags().StringToStringVarP(&metadata, "metadatum", "m", map[string]string{}, "metadatum name and value for your sample, ex. 'host=Human'")
+	uploadSampleCmd.Flags().StringToStringVarP(&stringMetadata, "metadatum", "m", map[string]string{}, "metadatum name and value for your sample, ex. 'host=Human'")
 	uploadSampleCmd.Flags().StringVarP(&sampleName, "sample-name", "s", "", "Sample name. Optional, defaults to the base file name of r1path with extensions and _R1 removed")
 	uploadSampleCmd.Flags().StringVarP(&projectName, "project", "p", "", "Project name. Make sure the project is created on the website")
 	uploadSampleCmd.Flags().StringVar(&metadataCSVPath, "metadata-csv", "", "Metadata local file path.")

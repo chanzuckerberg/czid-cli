@@ -9,18 +9,18 @@ import (
 	"regexp"
 )
 
-type Metadata = map[string]string
+type Metadata = map[string]interface{}
 type SamplesMetadata = map[string]Metadata
 
 func ToValidateForm(m SamplesMetadata) validationMetadata {
 	headerIndexes := map[string]int{"Sample Name": 0}
 	vM := validationMetadata{
 		Headers: []string{"Sample Name"},
-		Rows:    make([][]string, len(m)),
+		Rows:    make([][]interface{}, len(m)),
 	}
 
 	for sampleName, row := range m {
-		validatorRow := make([]string, len(vM.Headers))
+		validatorRow := make([]interface{}, len(vM.Headers))
 		validatorRow[0] = sampleName
 		for name, value := range row {
 			headerIndex, seenHeader := headerIndexes[name]
@@ -162,4 +162,25 @@ func SamplesFromDir(directory string) (map[string]SampleFiles, error) {
 		}
 	}
 	return pairs, err
+}
+
+func GeoSearchSuggestions(samplesMetadata *SamplesMetadata) error {
+	for sampleName, metadata := range *samplesMetadata {
+		for name, value := range metadata {
+			if name == "Collection Location" {
+				stringValue, isString := value.(string)
+				if !isString {
+					return fmt.Errorf("cannot get geo search suggestions for non-string value %v", value)
+				}
+				suggestion, err := GetGeoSearchSuggestion(stringValue, true)
+				if err != nil {
+					return err
+				}
+				if suggestion != (GeoSearchSuggestion{}) {
+					(*samplesMetadata)[sampleName][name] = suggestion
+				}
+			}
+		}
+	}
+	return nil
 }

@@ -70,8 +70,8 @@ type Sample struct {
 }
 
 type validationMetadata struct {
-	Headers []string   `json:"headers"`
-	Rows    [][]string `json:"rows"`
+	Headers []string        `json:"headers"`
+	Rows    [][]interface{} `json:"rows"`
 }
 
 type validateCSVReq struct {
@@ -222,9 +222,9 @@ type UploadableSample struct {
 }
 
 type samplesReq struct {
-	Samples  []UploadableSample           `json:"samples"`
-	Metadata map[string]map[string]string `json:"metadata"`
-	Client   string                       `json:"client"`
+	Samples  []UploadableSample `json:"samples"`
+	Metadata SamplesMetadata    `json:"metadata"`
+	Client   string             `json:"client"`
 }
 
 type inputFile struct {
@@ -308,4 +308,63 @@ func GetProjectID(projectName string) (int, error) {
 		return projectId, fmt.Errorf("project '%s' not found", projectName)
 	}
 	return projectId, nil
+}
+
+type GetGeoSearchSuggestionReq struct{}
+
+type GeoSearchSuggestion struct {
+	Name            string `json:"name"`
+	GeoLevel        string `json:"geo_level"`
+	CountryName     string `json:"country_name"`
+	StateName       string `json:"state_name"`
+	SubdivisionName string `json:"subdivision_name"`
+	CityName        string `json:"city_name"`
+	// Lat             float64 `json:"lat"`
+	// Lng             float64 `json:"lng"`
+	CountryCode string `json:"country_code"`
+	// OSMID           int64   `json:"osm_id"`
+	// OSMType         string  `json:"osm_type"`
+	// LocationID      int64   `json:"locationiq_id"`
+}
+
+func GetGeoSearchSuggestion(queryStr string, isHuman bool) (GeoSearchSuggestion, error) {
+	query := url.Values{"query": []string{queryStr}, "limit": []string{"1"}}
+	resp := []GeoSearchSuggestion{}
+	err := request(
+		"GET",
+		"locations/external_search",
+		query.Encode(),
+		GetGeoSearchSuggestionReq{},
+		&resp,
+	)
+	result := GeoSearchSuggestion{}
+	if len(resp) > 0 {
+		result = resp[0]
+	}
+	if isHuman && result.GeoLevel == "city" {
+		if result.SubdivisionName == result.CityName {
+			result.SubdivisionName = ""
+		}
+
+		result.CityName = ""
+		result.Name = ""
+		for _, s := range []string{result.SubdivisionName, result.StateName, result.CountryName} {
+			if s != "" {
+				if len(result.Name) > 0 {
+					result.Name += ", "
+				}
+				result.Name += s
+			}
+		}
+
+		if result.SubdivisionName != "" {
+			result.GeoLevel = "subdivision"
+		} else if result.StateName != "" {
+			result.GeoLevel = "state"
+		} else if result.CountryName != "" {
+			result.GeoLevel = "country"
+		}
+	}
+
+	return result, err
 }

@@ -26,6 +26,10 @@ var uploadSamplesCmd = &cobra.Command{
 		if len(args) > 1 {
 			return fmt.Errorf("too many positional arguments %d found 1 expected", len(args))
 		}
+		metadata := make(idseq.Metadata, len(stringMetadata))
+		for k, v := range stringMetadata {
+			metadata[k] = v
+		}
 		directory := args[0]
 		sampleFiles, err := idseq.SamplesFromDir(directory)
 		if err != nil {
@@ -67,6 +71,10 @@ var uploadSamplesCmd = &cobra.Command{
 				samplesMetadata[sampleName][name] = value
 			}
 		}
+		err = idseq.GeoSearchSuggestions(&samplesMetadata)
+		if err != nil {
+			return err
+		}
 		vm := idseq.ToValidateForm(samplesMetadata)
 		validationResp, err := idseq.ValidateCSV(samples, vm)
 		if err != nil {
@@ -87,7 +95,7 @@ var uploadSamplesCmd = &cobra.Command{
 				inputFileAttributes = append(inputFileAttributes, idseq.NewInputFile(sF.R2))
 			}
 
-			hostGenome := samplesMetadata[sampleName]["Host Organism"]
+			hostGenome := samplesMetadata[sampleName]["Host Organism"].(string)
 			uploadableSamples = append(uploadableSamples, idseq.UploadableSample{
 				Name:                sampleName,
 				ProjectID:           projectID,
@@ -131,7 +139,7 @@ var uploadSamplesCmd = &cobra.Command{
 func init() {
 	shortReadMNGSCmd.AddCommand(uploadSamplesCmd)
 
-	uploadSamplesCmd.Flags().StringToStringVarP(&metadata, "metadatum", "m", map[string]string{}, "metadatum name and value for your sample, ex. 'host=Human'")
+	uploadSamplesCmd.Flags().StringToStringVarP(&stringMetadata, "metadatum", "m", map[string]string{}, "metadatum name and value for your sample, ex. 'host=Human'")
 	uploadSamplesCmd.Flags().StringVarP(&projectName, "project", "p", "", "Project name. Make sure the project is created on the website")
 	uploadSamplesCmd.Flags().StringVar(&metadataCSVPath, "metadata-csv", "", "Metadata local file path.")
 }
