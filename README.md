@@ -1,5 +1,7 @@
 # IDSeq CLI
 
+Project Status: Unstable
+
 A **C**ommand **L**ine **I**nterface for [IDSeq](https://idseq.net/). 
 
 Rewrite of https://github.com/chanzuckerberg/idseq-cli, work in progress.
