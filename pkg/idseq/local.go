@@ -12,31 +12,6 @@ import (
 type Metadata = map[string]interface{}
 type SamplesMetadata = map[string]Metadata
 
-func ToValidateForm(m SamplesMetadata) validationMetadata {
-	headerIndexes := map[string]int{"Sample Name": 0}
-	vM := validationMetadata{
-		Headers: []string{"Sample Name"},
-		Rows:    make([][]interface{}, len(m)),
-	}
-
-	for sampleName, row := range m {
-		validatorRow := make([]interface{}, len(vM.Headers))
-		validatorRow[0] = sampleName
-		for name, value := range row {
-			headerIndex, seenHeader := headerIndexes[name]
-			if !seenHeader {
-				vM.Headers = append(vM.Headers, name)
-				headerIndexes[name] = len(headerIndexes)
-				validatorRow = append(validatorRow, value)
-			} else {
-				validatorRow[headerIndex] = value
-			}
-		}
-		vM.Rows = append(vM.Rows, validatorRow)
-	}
-	return vM
-}
-
 func CSVMetadata(csvpath string) (SamplesMetadata, error) {
 	samplesMetadata := SamplesMetadata{}
 	f, err := os.Open(csvpath)

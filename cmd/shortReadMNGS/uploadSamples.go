@@ -41,14 +41,6 @@ var uploadSamplesCmd = &cobra.Command{
 			return err
 		}
 
-		samples := []idseq.Sample{}
-		for sampleName := range sampleFiles {
-			samples = append(samples, idseq.Sample{
-				Name:      sampleName,
-				ProjectID: projectID,
-			})
-		}
-
 		samplesMetadata := idseq.SamplesMetadata{}
 		if metadataCSVPath != "" {
 			samplesMetadata, err = idseq.CSVMetadata(metadataCSVPath)
@@ -75,43 +67,21 @@ var uploadSamplesCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		vm := idseq.ToValidateForm(samplesMetadata)
-		validationResp, err := idseq.ValidateCSV(samples, vm)
+		err = idseq.ValidateSamplesMetadata(projectID, samplesMetadata)
 		if err != nil {
-			return err
-		}
-		validationResp.Issues.FriendlyPrint()
-		if len(validationResp.Issues.Errors) > 0 {
-			os.Exit(1)
-		}
-
-		uploadableSamples := []idseq.UploadableSample{}
-		for sampleName, sF := range sampleFiles {
-			inputFileAttributes := []idseq.InputFileAttribute{}
-			if sF.Single != "" {
-				inputFileAttributes = append(inputFileAttributes, idseq.NewInputFile(sF.Single))
-			} else {
-				inputFileAttributes = append(inputFileAttributes, idseq.NewInputFile(sF.R1))
-				inputFileAttributes = append(inputFileAttributes, idseq.NewInputFile(sF.R2))
+			if err.Error() == "metadata validation failed" {
+				os.Exit(1)
 			}
-
-			hostGenome := samplesMetadata[sampleName]["Host Organism"].(string)
-			uploadableSamples = append(uploadableSamples, idseq.UploadableSample{
-				Name:                sampleName,
-				ProjectID:           projectID,
-				HostGenomeName:      hostGenome,
-				InputFileAttributes: inputFileAttributes,
-				Status:              "created",
-			})
+			return err
 		}
 
-		r, err := idseq.UploadSample(uploadableSamples, samplesMetadata)
+		credentials, samples, err := idseq.CreateSamples(projectID, sampleFiles, samplesMetadata)
 		if err != nil {
 			return err
 		}
 
-		u := upload.NewUploader(r.Credentials)
-		for _, sample := range r.Samples {
+		u := upload.NewUploader(credentials)
+		for _, sample := range samples {
 			sF := sampleFiles[sample.Name]
 			for _, inputFile := range sample.InputFiles {
 				filename := ""

@@ -3,6 +3,7 @@ package shortReadMNGS
 import (
 	"errors"
 	"os"
+	"path/filepath"
 
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq"
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/upload"
@@ -43,10 +44,10 @@ var uploadSampleCmd = &cobra.Command{
 			return err
 		}
 
-		samples := []idseq.Sample{{
-			Name:      sampleName,
-			ProjectID: projectID,
-		}}
+		if sampleName == "" {
+			sampleName = idseq.ToSampleName(r1path)
+		}
+
 		samplesMetadata := idseq.SamplesMetadata{}
 		if metadataCSVPath != "" {
 			samplesMetadata, err = idseq.CSVMetadata(metadataCSVPath)
@@ -72,56 +73,49 @@ var uploadSampleCmd = &cobra.Command{
 			return err
 		}
 
-		vm := idseq.ToValidateForm(samplesMetadata)
-		validationResp, err := idseq.ValidateCSV(samples, vm)
+		err = idseq.ValidateSamplesMetadata(projectID, samplesMetadata)
 		if err != nil {
+			if err.Error() == "metadata validation failed" {
+				os.Exit(1)
+			}
 			return err
 		}
-		validationResp.Issues.FriendlyPrint()
-		if len(validationResp.Issues.Errors) > 0 {
-			os.Exit(1)
-		}
-		inputFiles := []string{r1path}
+
+		inputFiles := idseq.SampleFiles{Single: r1path}
 		if r2path != "" {
-			inputFiles = append(inputFiles, r2path)
+			inputFiles = idseq.SampleFiles{
+				R1: r1path,
+				R2: r2path,
+			}
 		}
 
-		inputFileAttributes := make([]idseq.InputFileAttribute, len(inputFiles))
-		for i, inputFile := range inputFiles {
-			inputFileAttributes[i] = idseq.NewInputFile(inputFile)
-		}
-
-		uploadableSamples := []idseq.UploadableSample{{
-			Name:                sampleName,
-			ProjectID:           projectID,
-			HostGenomeName:      samplesMetadata[sampleName]["Host Organism"].(string),
-			InputFileAttributes: inputFileAttributes,
-			Status:              "created",
-		}}
-
-		r, err := idseq.UploadSample(uploadableSamples, samplesMetadata)
+		credentials, samples, err := idseq.CreateSamples(
+			projectID,
+			map[string]idseq.SampleFiles{sampleName: inputFiles},
+			samplesMetadata,
+		)
 		if err != nil {
 			return err
 		}
 
-		if sampleName == "" {
-			sampleName = idseq.ToSampleName(r1path)
-		}
-
-		uploader := upload.NewUploader(r.Credentials)
-		err = uploader.UploadFile(r1path, r.Samples[0].InputFiles[0].S3Path, r.Samples[0].InputFiles[0].MultipartUploadId)
-		if err != nil {
-			return err
-		}
-
-		if r2path != "" {
-			err = uploader.UploadFile(r2path, r.Samples[0].InputFiles[1].S3Path, r.Samples[0].InputFiles[1].MultipartUploadId)
+		uploader := upload.NewUploader(credentials)
+		for _, sample := range samples {
+			for _, upload := range sample.InputFiles {
+				localPath := r1path
+				if filepath.Base(upload.S3Path) == filepath.Base(r2path) {
+					localPath = r2path
+				}
+				err = uploader.UploadFile(localPath, upload.S3Path, upload.MultipartUploadId)
+				if err != nil {
+					return err
+				}
+			}
+			err = idseq.MarkSampleUploaded(sample.ID, sampleName)
 			if err != nil {
 				return err
 			}
 		}
-
-		return idseq.MarkSampleUploaded(r.Samples[0].ID, sampleName)
+		return nil
 	},
 }
 
