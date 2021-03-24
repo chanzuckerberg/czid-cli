@@ -90,13 +90,6 @@ func CreateSamples(projectID int, sampleFiles map[string]SampleFiles, samplesMet
 	res := createSamplesRes{}
 	err := request("POST", "samples/bulk_upload_with_metadata.json", "", req, &res)
 
-	uploadInfos := []UploadInfo{}
-	for _, sample := range res.Samples {
-		for _, inputFile := range sample.InputFiles {
-			uploadInfos = append(uploadInfos, inputFile)
-		}
-	}
-
 	credentials := aws.Credentials{
 		AccessKeyID:     res.Credentials.AccessKeyID,
 		Expires:         res.Credentials.Expiration,

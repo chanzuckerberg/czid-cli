@@ -59,25 +59,25 @@ func CSVMetadata(csvpath string) (SamplesMetadata, error) {
 	return samplesMetadata, nil
 }
 
-var inputExp = regexp.MustCompile("\\.(fasta|fa|fastq)(\\.gz)?$")
+var inputExp = regexp.MustCompile(`\.(fasta|fa|fastq)(\.gz)?$`)
 
 func IsInput(path string) bool {
 	return inputExp.MatchString(path)
 }
 
-var sampleNameExp = regexp.MustCompile("(_R[12])?\\.(fasta|fa|fastq)(\\.gz)?$")
+var sampleNameExp = regexp.MustCompile(`(_R[12])?\.(fasta|fa|fastq)(\.gz)?$`)
 
 func ToSampleName(path string) string {
 	return sampleNameExp.ReplaceAllString(filepath.Base(path), "")
 }
 
-var r1Exp = regexp.MustCompile("_R1\\.(fasta|fa|fastq)(\\.gz)?$")
+var r1Exp = regexp.MustCompile(`_R1\.(fasta|fa|fastq)(\.gz)?$`)
 
 func IsR1(path string) bool {
 	return r1Exp.MatchString(path)
 }
 
-var r2Exp = regexp.MustCompile("_R2\\.(fasta|fa|fastq)(\\.gz)?$")
+var r2Exp = regexp.MustCompile(`_R2\.(fasta|fa|fastq)(\.gz)?$`)
 
 func IsR2(path string) bool {
 	return r2Exp.MatchString(path)
