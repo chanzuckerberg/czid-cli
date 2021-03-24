@@ -69,8 +69,6 @@ type updateRequest struct {
 	Sample updateRequestSample `json:"sample"`
 }
 
-type updateResponse struct{}
-
 func MarkSampleUploaded(sampleId int, sampleName string) error {
 	req := updateRequest{
 		Sample: updateRequestSample{
