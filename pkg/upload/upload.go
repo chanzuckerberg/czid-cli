@@ -62,7 +62,6 @@ func (u *Uploader) runProgressBar(fileSize int64) {
 			m := partNumber
 			minPartNumber = &m
 			bar = pb.Full.Start64(fileSize)
-			defer bar.Finish()
 			bar.Set(pb.Bytes, true)
 			bar.SetCurrent(m * u.u.PartSize)
 		}
@@ -70,6 +69,9 @@ func (u *Uploader) runProgressBar(fileSize int64) {
 			count += 1
 		}
 		bar.SetCurrent((*minPartNumber + count) * u.u.PartSize)
+	}
+	if bar != nil {
+		(*bar).Finish()
 	}
 }
 
