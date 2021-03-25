@@ -53,12 +53,12 @@ jobs:
   Prerelease:
     name: Prerelease
     runs-on: ubuntu-20.04
+    if: ${{ github.event_name == 'release' && github.event.release.prerelease }}
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
       - uses: goreleaser/goreleaser-action@v2
-        if: ${{ github.event_name == 'release' && github.event.release.prerelease }}
         with:
           version: latest
           args: release --rm-dist -f .goreleaser.prerelease.yml
