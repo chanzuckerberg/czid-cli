@@ -1,4 +1,4 @@
-name: Check
+name: CICD
 on:
   push:
   release:
@@ -63,5 +63,20 @@ jobs:
         with:
           version: latest
           args: release --rm-dist -f .goreleaser.prerelease.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  Release:
+    name: Release
+    runs-on: ubuntu-20.04
+    if: ${{ github.event_name == 'release' && !github.event.release.prerelease }}
+    needs: [Build, Test, Dependencies, Lint]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release --rm-dist -f .goreleaser.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
