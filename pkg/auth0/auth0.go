@@ -17,7 +17,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-var clientID string = ""
+var defaultClientID string = ""
+
+func clientID() string {
+	if viper.IsSet("auth0_client_id") {
+		return viper.GetString("auth0_client_id")
+	}
+	return defaultClientID
+}
 
 const refreshTokenKey = "SECRET"
 const idTokenKey = "TOKEN"
@@ -149,7 +156,7 @@ func (c client) requestDeviceCode(persistent bool) (deviceCodeResponse, error) {
 	var d deviceCodeResponse
 	endpoint := "https://czi-idseq-dev.auth0.com/oauth/device/code"
 	params := map[string]string{
-		"client_id": clientID,
+		"client_id": clientID(),
 		"scope":     "email openid",
 		"audience":  "https://czi-idseq-dev.auth0.com/api/v2/",
 	}
@@ -179,7 +186,7 @@ func (c client) requestToken(deviceCode string) (tokenResponse, error) {
 	endpoint := "https://czi-idseq-dev.auth0.com/oauth/token"
 	var t tokenResponse
 	params := map[string]string{
-		"client_id":   clientID,
+		"client_id":   clientID(),
 		"device_code": deviceCode,
 		"grant_type":  "urn:ietf:params:oauth:grant-type:device_code",
 	}
@@ -217,7 +224,7 @@ func (c client) refreshIdToken(refreshToken string) (tokenResponse, error) {
 	var t tokenResponse
 	endpoint := "https://czi-idseq-dev.auth0.com/oauth/token"
 	params := map[string]string{
-		"client_id":     clientID,
+		"client_id":     clientID(),
 		"grant_type":    "refresh_token",
 		"refresh_token": refreshToken,
 	}
@@ -232,7 +239,7 @@ func authorize(token string) (string, error) {
 		"audience":      "https://sandbox.idseq.net",
 		"response_type": "token",
 		"scope":         "openid",
-		"client_id":     clientID,
+		"client_id":     clientID(),
 		"prompt":        "none",
 	}
 	query := url.Values{}
