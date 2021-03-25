@@ -11,9 +11,6 @@ var afterDash = regexp.MustCompile(`-.*$`)
 
 // VersionNumber strips the leading v and anything after a - in the version
 func VersionNumber() string {
-	version := Version
-	if strings.HasPrefix(version, "v") {
-		version = version[1:]
-	}
+	version := strings.TrimPrefix(Version, "v")
 	return afterDash.ReplaceAllString(version, "")
 }
