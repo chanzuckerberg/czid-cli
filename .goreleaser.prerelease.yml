@@ -20,7 +20,7 @@ builds:
     - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultAuth0Host={{.Env.AUTH0_HOST}}
     - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq.defaultIDSeqBaseURL={{.Env.IDSEQ_BASE_URL}}
   hooks:
-    post: "{{ .Path }} completion bash > bash_completions"
+    post: "if [ '{{ .Os }}' != 'windows' ]; then {{ .Path }} completion bash > bash_completions; fi"
   
 release:
   prerelease: true
