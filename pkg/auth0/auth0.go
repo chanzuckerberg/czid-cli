@@ -167,10 +167,15 @@ func addSeconds(t time.Time, s int) time.Time {
 
 func (c client) requestDeviceCode(persistent bool) (deviceCodeResponse, error) {
 	var d deviceCodeResponse
+	audience := url.URL{
+		Scheme: "https",
+		Host:   auth0Host(),
+		Path:   "api/v2/",
+	}
 	params := map[string]string{
 		"client_id": clientID(),
 		"scope":     "email openid",
-		"audience":  "https://czi-idseq-dev.auth0.com/api/v2/",
+		"audience":  audience.String(),
 	}
 	if persistent {
 		params["scope"] = "email openid offline_access"
@@ -259,7 +264,7 @@ func authorize(token string) (string, error) {
 
 	u := url.URL{
 		Scheme:   "https",
-		Host:     "czi-idseq-dev.auth0.com",
+		Host:     auth0Host(),
 		Path:     "authorize",
 		RawQuery: query.Encode(),
 	}
