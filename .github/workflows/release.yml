@@ -15,8 +15,8 @@ jobs:
       - name: Wait on Checks
         uses: lewagon/wait-on-check-action@v0.2
         with:
-          ref: ${{ github.ref }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          ref: "github.event.release.target_commitish"
+          check-regex: "(Test)|(Dependencies)|(Build)|(Lint)"
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
         with:
