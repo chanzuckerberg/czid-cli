@@ -12,16 +12,17 @@ jobs:
         with:
           go-version: 1.15.5
         id: go
+      - name: Wait on Checks
+        uses: lewagon/wait-on-check-action@v0.2
+        with:
+          ref: ${{ github.ref }}
+          check-name: Check
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          allowed-conclusions: success
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
-      - name: Get dependencies
-        run: go get -v -t -d ./...
-      - name: Test
-        run: go test ./...
-      - name: Deps
-        run: |
-          go mod tidy
-          git diff --exit-code
+        with:
+          fetch-depth: 0 # fetches everything, for some reason goreleaser needs this
       - name: Release
         uses: goreleaser/goreleaser-action@v2
         if: "!github.event.release.prerelease"
