@@ -12,6 +12,9 @@ builds:
     - windows
   goarch:
     - amd64
+    - arm64
+  ldflags:
+    - -s -w -X github.com/chanzuckerberg/idseq-cli-v2/pkg.Version={{.Version}}
 
 release:
   prerelease: true

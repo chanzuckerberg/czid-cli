@@ -12,13 +12,15 @@ builds:
   goarch:
     - amd64
     - arm64
+  ldflags:
+    - -s -w -X pkg.Version={{.Version}}
 
 release:
   prerelease: false
 
 archives:
   - files:
-    - LICENSE
+    - LICENSE.md
     - README.md
 
 brews:

@@ -10,10 +10,12 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/spf13/viper"
+
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0"
 )
 
-var baseURL = ""
+var defaultIDSeqBaseURL = ""
 
 func request(method string, path string, query string, reqBody interface{}, resBody interface{}) error {
 	token, err := auth0.IdToken()
@@ -26,6 +28,10 @@ func request(method string, path string, query string, reqBody interface{}, resB
 		return err
 	}
 
+	baseURL := defaultIDSeqBaseURL
+	if viper.IsSet("idseq_base_url") {
+		baseURL = viper.GetString("idseq_base_url")
+	}
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return err

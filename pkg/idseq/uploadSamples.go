@@ -58,7 +58,7 @@ type UploadInfo struct {
 func CreateSamples(projectID int, sampleFiles map[string]SampleFiles, samplesMetadata SamplesMetadata) (aws.Credentials, []createSamplesResSample, error) {
 	req := samplesReq{
 		Metadata: samplesMetadata,
-		Client:   pkg.Version,
+		Client:   pkg.VersionNumber(),
 	}
 
 	for sampleName := range samplesMetadata {
