@@ -12,11 +12,22 @@ jobs:
         with:
           go-version: 1.15.5
         id: go
-      - name: Wait on Checks
-        uses: lewagon/wait-on-check-action@v0.2
+      - uses: lewagon/wait-on-check-action@v0.2
         with:
           ref: "github.event.release.target_commitish"
-          check-regex: "(Test)|(Dependencies)|(Build)|(Lint)"
+          check-name: "Test"
+      - uses: lewagon/wait-on-check-action@v0.2
+        with:
+          ref: "github.event.release.target_commitish"
+          check-name: "Dependencies"
+      - uses: lewagon/wait-on-check-action@v0.2
+        with:
+          ref: "github.event.release.target_commitish"
+          check-name: "Build"
+      - uses: lewagon/wait-on-check-action@v0.2
+        with:
+          ref: "github.event.release.target_commitish"
+          check-name: "Lint"
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
         with:
