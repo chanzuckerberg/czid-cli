@@ -18,12 +18,20 @@ import (
 )
 
 var defaultClientID string = ""
+var defaultAuth0Host string = ""
 
 func clientID() string {
 	if viper.IsSet("auth0_client_id") {
 		return viper.GetString("auth0_client_id")
 	}
 	return defaultClientID
+}
+
+func auth0Host() string {
+	if viper.IsSet("auth0_host") {
+		return viper.GetString("auth0_host")
+	}
+	return defaultAuth0Host
 }
 
 const refreshTokenKey = "SECRET"
@@ -80,7 +88,12 @@ func (e *errorResponse) Error() string {
 	return fmt.Sprintf("authentication error: %s", e.ErrorDescription)
 }
 
-func formPost(endpoint string, params map[string]string, r interface{}) error {
+func formPost(path string, params map[string]string, r interface{}) error {
+	endpoint := url.URL{
+		Scheme: "https",
+		Host:   auth0Host(),
+		Path:   path,
+	}
 	var eR errorResponse
 	data := url.Values{}
 	for k, v := range params {
@@ -88,7 +101,7 @@ func formPost(endpoint string, params map[string]string, r interface{}) error {
 	}
 	payload := strings.NewReader(data.Encode())
 
-	req, err := http.NewRequest("POST", endpoint, payload)
+	req, err := http.NewRequest("POST", endpoint.String(), payload)
 	if err != nil {
 		return err
 	}
@@ -118,7 +131,7 @@ func formPost(endpoint string, params map[string]string, r interface{}) error {
 }
 
 type client struct {
-	formPost func(endpoint string, params map[string]string, r interface{}) error
+	formPost func(path string, params map[string]string, r interface{}) error
 	viper    *viper.Viper
 	cache    *viper.Viper
 }
@@ -154,7 +167,6 @@ func addSeconds(t time.Time, s int) time.Time {
 
 func (c client) requestDeviceCode(persistent bool) (deviceCodeResponse, error) {
 	var d deviceCodeResponse
-	endpoint := "https://czi-idseq-dev.auth0.com/oauth/device/code"
 	params := map[string]string{
 		"client_id": clientID(),
 		"scope":     "email openid",
@@ -164,7 +176,7 @@ func (c client) requestDeviceCode(persistent bool) (deviceCodeResponse, error) {
 		params["scope"] = "email openid offline_access"
 	}
 	timeFetched := time.Now()
-	err := c.formPost(endpoint, params, &d)
+	err := c.formPost("oauth/device/code", params, &d)
 	d.ExpiresAt = addSeconds(timeFetched, d.ExpiresIn)
 	return d, err
 }
@@ -183,7 +195,6 @@ func promptDeviceActivation(verificantionURIComplete string, headless bool) {
 }
 
 func (c client) requestToken(deviceCode string) (tokenResponse, error) {
-	endpoint := "https://czi-idseq-dev.auth0.com/oauth/token"
 	var t tokenResponse
 	params := map[string]string{
 		"client_id":   clientID(),
@@ -191,7 +202,7 @@ func (c client) requestToken(deviceCode string) (tokenResponse, error) {
 		"grant_type":  "urn:ietf:params:oauth:grant-type:device_code",
 	}
 	timeFetched := time.Now()
-	err := c.formPost(endpoint, params, &t)
+	err := c.formPost("oauth/token", params, &t)
 	t.ExpiresAt = addSeconds(timeFetched, t.ExpiresIn)
 	return t, err
 }
@@ -222,14 +233,13 @@ func (c client) pollForTokens(interval time.Duration, expiresAt time.Time, devic
 
 func (c client) refreshIdToken(refreshToken string) (tokenResponse, error) {
 	var t tokenResponse
-	endpoint := "https://czi-idseq-dev.auth0.com/oauth/token"
 	params := map[string]string{
 		"client_id":     clientID(),
 		"grant_type":    "refresh_token",
 		"refresh_token": refreshToken,
 	}
 	timeFetched := time.Now()
-	err := c.formPost(endpoint, params, &t)
+	err := c.formPost("oauth/token", params, &t)
 	t.ExpiresAt = addSeconds(timeFetched, t.ExpiresIn)
 	return t, err
 }

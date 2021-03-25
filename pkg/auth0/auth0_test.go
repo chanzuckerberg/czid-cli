@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-func mockFormPost(endpoint string, params map[string]string, r interface{}) error {
-	if endpoint == "https://czi-idseq-dev.auth0.com/oauth/device/code" {
+func mockFormPost(path string, params map[string]string, r interface{}) error {
+	if path == "oauth/device/code" {
 		deviceCode := "device_code"
 		if strings.Contains(params["scope"], "offline_access") {
 			deviceCode = "device_code_refresh"
@@ -28,7 +28,7 @@ func mockFormPost(endpoint string, params map[string]string, r interface{}) erro
         }`, deviceCode)
 		return json.Unmarshal([]byte(resp), r)
 	}
-	if endpoint == "https://czi-idseq-dev.auth0.com/oauth/token" {
+	if path == "oauth/token" {
 		refreshToken := ""
 		if params["device_code"] == "device_code_refresh" {
 			refreshToken = `"refresh_token": "refresh_token",`
