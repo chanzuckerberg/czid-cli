@@ -20,8 +20,6 @@ jobs:
         run: go get -v -t -d ./...
       - name: Test
         run: go test ./...
-      - name: Lint
-        uses: golangci/golangci-lint-action@v2
       - name: Deps
         run: |
           go mod tidy
