@@ -18,6 +18,6 @@ This project adheres to the Contributor Covenant [code of conduct](https://www.c
 
 ## Reporting Security Issues
 
-Please note: If you believe you have found a security issue, please responsibly disclose by contacting us at security@chanzuckerberg.com.
+Please note: If you believe you have found a security issue, please responsibly disclose by contacting us at security@idseq.net.
 
 See [SECURITY.md](SECURITY.md) for more information.
