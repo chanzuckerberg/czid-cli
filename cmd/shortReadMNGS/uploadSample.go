@@ -2,6 +2,7 @@ package shortReadMNGS
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -18,6 +19,7 @@ var uploadSampleCmd = &cobra.Command{
 	Short: "Upload a single sample",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Printf("args: %v\n", args)
 		if projectName == "" {
 			return errors.New("missing required argument project")
 		}

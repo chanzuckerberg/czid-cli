@@ -17,6 +17,7 @@ var uploadSamplesCmd = &cobra.Command{
 	Short: "Bulk upload many samples",
 	Long:  "Bulk upload many samples",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Printf("args: %v\n", args)
 		if projectName == "" {
 			return errors.New("missing required argument project")
 		}
