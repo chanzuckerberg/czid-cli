@@ -31,7 +31,7 @@ var uploadSampleCmd = &cobra.Command{
 		r1path := args[0]
 		r2path := ""
 		if len(args) > 1 {
-			r2path = args[2]
+			r2path = args[1]
 		}
 		if len(args) > 2 {
 			return errors.New("too many input files (maximum 2)")
