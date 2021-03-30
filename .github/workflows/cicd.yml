@@ -29,7 +29,7 @@ jobs:
         run: make deps
       - name: Test
         run: |
-          make test 
+          make test
           bash <(curl -s https://codecov.io/bash)
   Dependencies:
     name: Dependencies
@@ -64,6 +64,9 @@ jobs:
           version: latest
           args: release --rm-dist -f .goreleaser.prerelease.yml
         env:
+          AUTH_0_CLIENT_ID: ${{ secrets.AUTH_0_CLIENT_ID }}
+          AUTH0_HOST: ${{ secrets.AUTH0_HOST }}
+          IDSEQ_BASE_URL: ${{ secrets.IDSEQ_BASE_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   Release:
     name: Release
@@ -79,4 +82,7 @@ jobs:
           version: latest
           args: release --rm-dist -f .goreleaser.yml
         env:
+          AUTH_0_CLIENT_ID: ${{ secrets.AUTH_0_CLIENT_ID }}
+          AUTH0_HOST: ${{ secrets.AUTH0_HOST }}
+          IDSEQ_BASE_URL: ${{ secrets.IDSEQ_BASE_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
