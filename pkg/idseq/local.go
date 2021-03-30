@@ -65,7 +65,7 @@ func IsInput(path string) bool {
 	return inputExp.MatchString(path)
 }
 
-var sampleNameExp = regexp.MustCompile(`(_R[12])?\.(fasta|fa|fastq|fq)(\.gz)?$`)
+var sampleNameExp = regexp.MustCompile(`(_R[12]|_R[12]_001)?\.(fasta|fa|fastq|fq)(\.gz)?$`)
 
 func ToSampleName(path string) string {
 	return sampleNameExp.ReplaceAllString(filepath.Base(path), "")
