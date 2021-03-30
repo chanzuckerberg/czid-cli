@@ -49,7 +49,7 @@ Upload a single sample to the short read MNGS pipeline:
 
 ```bash
 idseq short-read-mngs upload-sample \
-  -s 'Project Name' \
+  -p 'Project Name' \
   -s 'Sample Name' \
   --metadata-csv your_metadata.csv \
   -m 'Metadata Name=Metadata Value' \
