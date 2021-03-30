@@ -18,19 +18,19 @@ var uploadSamplesCmd = &cobra.Command{
 	Long:  "Bulk upload many samples",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if projectName == "" {
-			return errors.New("missing required argument project")
+			return errors.New("missing required argument: project")
 		}
 		if len(args) == 0 {
-			return errors.New("missing required positional argument directory")
+			return errors.New("missing required positional argument: directory")
 		}
 		if len(args) > 1 {
-			return fmt.Errorf("too many positional arguments %d found 1 expected", len(args))
+			return fmt.Errorf("too many positional arguments, (maximum 1), args: %v", args)
 		}
+		directory := args[0]
 		metadata := make(idseq.Metadata, len(stringMetadata))
 		for k, v := range stringMetadata {
 			metadata[k] = v
 		}
-		directory := args[0]
 		sampleFiles, err := idseq.SamplesFromDir(directory)
 		if err != nil {
 			return err

@@ -2,6 +2,7 @@ package shortReadMNGS
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -19,10 +20,10 @@ var uploadSampleCmd = &cobra.Command{
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if projectName == "" {
-			return errors.New("missing required argument project")
+			return errors.New("missing required argument: project")
 		}
 		if len(args) == 0 {
-			return errors.New("missing required argument r1path")
+			return errors.New("missing required argument: r1path")
 		}
 		metadata := make(idseq.Metadata, len(stringMetadata))
 		for k, v := range stringMetadata {
@@ -34,7 +35,7 @@ var uploadSampleCmd = &cobra.Command{
 			r2path = args[1]
 		}
 		if len(args) > 2 {
-			return errors.New("too many input files (maximum 2)")
+			return fmt.Errorf("too many positional arguments (maximum 2), args: %v", args)
 		}
 		if r1path == r2path {
 			return errors.New("r1 and r2 cannot be the same file")

@@ -91,6 +91,12 @@ type SampleFiles struct {
 
 func SamplesFromDir(directory string) (map[string]SampleFiles, error) {
 	pairs := make(map[string]SampleFiles)
+	if dir, err := os.Stat(directory); err != nil {
+		return pairs, err
+	} else if !dir.IsDir() {
+		return pairs, fmt.Errorf("path %s must be a directory", directory)
+	}
+
 	err := filepath.Walk(directory, func(path string, f os.FileInfo, err error) error {
 		if match := IsInput(path); match {
 			sampleName := ToSampleName(path)
