@@ -51,9 +51,9 @@ var uploadSamplesCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			for sN := range samplesMetadata {
-				if sN != sampleName {
-					delete(samplesMetadata, sN)
+			for sampleName := range samplesMetadata {
+				if _, hasSampleName := sampleFiles[sampleName]; !hasSampleName {
+					delete(samplesMetadata, sampleName)
 				}
 			}
 		}
