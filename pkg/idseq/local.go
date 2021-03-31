@@ -89,7 +89,7 @@ type SampleFiles struct {
 	Single string
 }
 
-func SamplesFromDir(directory string) (map[string]SampleFiles, error) {
+func SamplesFromDir(directory string, verbose bool) (map[string]SampleFiles, error) {
 	pairs := make(map[string]SampleFiles)
 	if dir, err := os.Stat(directory); err != nil {
 		return pairs, err
@@ -109,6 +109,11 @@ func SamplesFromDir(directory string) (map[string]SampleFiles, error) {
 				if sampleFiles.R1 != "" {
 					return fmt.Errorf("found multiple R1 files for sample '%s': %s, %s", sampleName, path, sampleFiles.R1)
 				}
+
+				if verbose {
+					fmt.Printf("detected R1 sample file for sample: %s at path %s\n", sampleName, path)
+				}
+
 				sampleFiles.R1 = path
 			} else if IsR2(path) {
 				if sampleFiles.Single != "" {
@@ -117,6 +122,11 @@ func SamplesFromDir(directory string) (map[string]SampleFiles, error) {
 				if sampleFiles.R2 != "" {
 					return fmt.Errorf("found multiple R2 files for sample '%s': %s, %s", sampleName, path, sampleFiles.R2)
 				}
+
+				if verbose {
+					fmt.Printf("detected R2 sample file for sample: %s at path %s\n", sampleName, path)
+				}
+
 				sampleFiles.R2 = path
 			} else {
 				if sampleFiles.R1 != "" {
@@ -128,6 +138,11 @@ func SamplesFromDir(directory string) (map[string]SampleFiles, error) {
 				if sampleFiles.Single != "" {
 					return fmt.Errorf("found multiple single end files for sample '%s': %s, %s", sampleName, path, sampleFiles.Single)
 				}
+
+				if verbose {
+					fmt.Printf("detected single sample file for sample: %s at path %s\n", sampleName, path)
+				}
+
 				sampleFiles.Single = path
 			}
 			pairs[sampleName] = sampleFiles
@@ -135,6 +150,9 @@ func SamplesFromDir(directory string) (map[string]SampleFiles, error) {
 		return err
 	})
 	for sampleName, pair := range pairs {
+		if verbose {
+			fmt.Printf("detected sample: %s", sampleName)
+		}
 		if pair.R1 != "" && pair.R2 == "" {
 			return pairs, fmt.Errorf("found R1 but not R2 for sample '%s': %s", sampleName, pair.R1)
 		}

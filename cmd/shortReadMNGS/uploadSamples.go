@@ -17,6 +17,10 @@ var uploadSamplesCmd = &cobra.Command{
 	Short: "Bulk upload many samples",
 	Long:  "Bulk upload many samples",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		verbose, err := cmd.Flags().GetBool("verbose")
+		if err != nil {
+			return err
+		}
 		if projectName == "" {
 			return errors.New("missing required argument: project")
 		}
@@ -31,7 +35,7 @@ var uploadSamplesCmd = &cobra.Command{
 		for k, v := range stringMetadata {
 			metadata[k] = v
 		}
-		sampleFiles, err := idseq.SamplesFromDir(directory)
+		sampleFiles, err := idseq.SamplesFromDir(directory, verbose)
 		if err != nil {
 			return err
 		}

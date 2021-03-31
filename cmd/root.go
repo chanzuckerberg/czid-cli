@@ -37,6 +37,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file")
+	RootCmd.PersistentFlags().BoolP("verbose", "v", false, "Print verbose logs")
 }
 
 // initConfig reads in config file and ENV variables if set.
