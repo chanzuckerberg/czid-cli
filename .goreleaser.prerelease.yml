@@ -40,7 +40,6 @@ archives:
   - files:
     - LICENSE.md
     - README.md
-    - bash_completions
 
 checksum:
   name_template: "checksums.txt"
