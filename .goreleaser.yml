@@ -51,8 +51,8 @@ brews:
   test: system "#{bin}/idseq --version"
   install: |
     bin.install "idseq"
-    bash_completion.install "completions/bash" => "idseq"
-    zsh_completion.install "completions/zsh" => "_idseq"
+    bash_completion.install "bash_completion" => "idseq"
+    zsh_completion.install "zsh_completion" => "_idseq"
 
 nfpms:
   - 
@@ -65,8 +65,8 @@ nfpms:
       - deb
       - rpm
     files:
-      "completions/bash": "/etc/bash_completion.d/idseq"
-      "completions/zsh": "/usr/share/zsh/functions/Completion/idseq"
+      "bash_completion": "/etc/bash_completion.d/idseq"
+      "zsh_completion": "/usr/share/zsh/functions/Completion/idseq"
 
 checksum:
   name_template: "checksums.txt"
