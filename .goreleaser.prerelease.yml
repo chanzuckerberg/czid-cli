@@ -2,6 +2,13 @@ before:
   hooks:
     - go mod tidy
 
+x-ldflags: &ldflags
+  ? -s -w
+  ? -X github.com/chanzuckerberg/idseq-cli-v2/pkg.Version={{.Version}}
+  ? -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultClientID={{.Env.AUTH_0_CLIENT_ID}}
+  ? -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultAuth0Host={{.Env.AUTH0_HOST}}
+  ? -X github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq.defaultIDSeqBaseURL={{.Env.IDSEQ_BASE_URL}}
+
 builds:
 - id: "build-with-completions"
   binary: idseq
@@ -12,11 +19,7 @@ builds:
   goarch:
     - amd64
   ldflags:
-    - -s -w
-    - -X github.com/chanzuckerberg/idseq-cli-v2/pkg.Version={{.Version}}
-    - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultClientID={{.Env.AUTH_0_CLIENT_ID}}
-    - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultAuth0Host={{.Env.AUTH0_HOST}}
-    - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq.defaultIDSeqBaseURL={{.Env.IDSEQ_BASE_URL}}
+    <<: *ldflags
   hooks:
     post: "scripts/generate_completions.sh {{ .Path }}"
 - binary: idseq
@@ -26,12 +29,12 @@ builds:
     - darwin
   goarch:
     - amd64
+    - arm64
+  ignore:
+    - goos: linux
+      goarch: amd64
   ldflags:
-    - -s -w
-    - -X github.com/chanzuckerberg/idseq-cli-v2/pkg.Version={{.Version}}
-    - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultClientID={{.Env.AUTH_0_CLIENT_ID}}
-    - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultAuth0Host={{.Env.AUTH0_HOST}}
-    - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq.defaultIDSeqBaseURL={{.Env.IDSEQ_BASE_URL}}
+    <<: *ldflags
 
 release:
   prerelease: true
