@@ -100,3 +100,4 @@ jobs:
           AUTH0_HOST: ${{ secrets.AUTH0_HOST }}
           IDSEQ_BASE_URL: ${{ secrets.IDSEQ_BASE_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.CZIBUILDBOT_GITHUB_KEY }}
