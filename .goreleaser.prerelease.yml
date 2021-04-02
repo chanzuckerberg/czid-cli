@@ -18,8 +18,7 @@ builds:
     - linux
   goarch:
     - amd64
-  ldflags:
-    <<: *ldflags
+  ldflags: *ldflags
   hooks:
     post: "scripts/generate_completions.sh {{ .Path }}"
 - binary: idseq
@@ -33,8 +32,7 @@ builds:
   ignore:
     - goos: linux
       goarch: amd64
-  ldflags:
-    <<: *ldflags
+  ldflags: *ldflags
 
 release:
   prerelease: true
