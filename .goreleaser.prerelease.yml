@@ -2,8 +2,6 @@ before:
   hooks:
     - go mod tidy
 
-x-ldflags: &ldflags
-
 builds:
 - id: "build-with-completions"
   binary: idseq
