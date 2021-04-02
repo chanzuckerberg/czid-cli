@@ -3,11 +3,11 @@ before:
     - go mod tidy
 
 x-ldflags: &ldflags
-  ? -s -w
-  ? -X github.com/chanzuckerberg/idseq-cli-v2/pkg.Version={{.Version}}
-  ? -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultClientID={{.Env.AUTH_0_CLIENT_ID}}
-  ? -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultAuth0Host={{.Env.AUTH0_HOST}}
-  ? -X github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq.defaultIDSeqBaseURL={{.Env.IDSEQ_BASE_URL}}
+- -s -w
+- -X github.com/chanzuckerberg/idseq-cli-v2/pkg.Version={{.Version}}
+- -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultClientID={{.Env.AUTH_0_CLIENT_ID}}
+- -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultAuth0Host={{.Env.AUTH0_HOST}}
+- -X github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq.defaultIDSeqBaseURL={{.Env.IDSEQ_BASE_URL}}
 
 builds:
 - id: "build-with-completions"
