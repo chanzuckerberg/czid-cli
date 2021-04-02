@@ -24,6 +24,7 @@ builds:
     - CGO_ENABLED=0
   goos:
     - darwin
+    - windows
   goarch:
     - amd64
     - arm64
