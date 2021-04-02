@@ -10,10 +10,11 @@ import (
 )
 
 type createSamplesReqInputFile struct {
-	Name       string `json:"name"`
-	Parts      string `json:"parts"`
-	Source     string `json:"source"`
-	SourceType string `json:"source_type"`
+	Name         string `json:"name"`
+	Parts        string `json:"parts"`
+	Source       string `json:"source"`
+	SourceType   string `json:"source_type"`
+	UploadClient string `json:"upload_client"`
 }
 
 type createSamplesReqSample struct {
@@ -78,10 +79,11 @@ func CreateSamples(projectID int, sampleFiles map[string]SampleFiles, samplesMet
 
 		for i, filename := range filenames {
 			sample.InputFileAttributes[i] = createSamplesReqInputFile{
-				Name:       filepath.Base(filename),
-				Parts:      filepath.Base(filename),
-				Source:     filepath.Base(filename),
-				SourceType: "local",
+				Name:         filepath.Base(filename),
+				Parts:        filepath.Base(filename),
+				Source:       filepath.Base(filename),
+				SourceType:   "local",
+				UploadClient: "cli",
 			}
 		}
 		req.Samples = append(req.Samples, sample)
