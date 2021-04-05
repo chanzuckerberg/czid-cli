@@ -37,7 +37,8 @@ release:
   prerelease: false
 
 archives:
-  - files:
+  - wrap_in_directory: true
+    files:
     - LICENSE.md
     - README.md
     - bash_completion
@@ -68,9 +69,11 @@ nfpms:
     formats:
       - deb
       - rpm
-    files:
-      "bash_completion": "/etc/bash_completion.d/idseq"
-      "zsh_completion": "/usr/share/zsh/functions/Completion/idseq"
+    contents:
+      - src: "bash_completion"
+        dst: "/etc/bash_completion.d/idseq"
+      - src: "zsh_completion"
+        dst: "/usr/share/zsh/functions/Completion/idseq"
 
 checksum:
   name_template: "checksums.txt"
