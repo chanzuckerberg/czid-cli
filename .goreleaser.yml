@@ -69,7 +69,7 @@ nfpms:
     description: "A CLI for uploading samples to IDSeq"
     license: MIT
     # Default without version for easy latest release linking
-    file_name_template: {{.PackageName}}_{{ .Os }}_{{.Arch}}{{if .Arm}}v{{.Arm}}{{end}}{{if .Mips}}_{{.Mips}}{{end}}
+    file_name_template: "{{.PackageName}}_{{ .Os }}_{{.Arch}}{{if .Arm}}v{{.Arm}}{{end}}{{if .Mips}}_{{.Mips}}{{end}}"
     formats:
       - deb
       - rpm
