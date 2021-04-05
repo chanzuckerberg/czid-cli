@@ -37,7 +37,9 @@ release:
   prerelease: false
 
 archives:
-  - wrap_in_directory: true
+  # Default without version for easy latest release linking
+  - name_template: "{{.ProjectName}}_{{.Os}}_{{.Arch}}{{if .Arm}}v{{.Arm}}{{end}}{{if .Mips}}_{{.Mips}}{{end}}"
+    wrap_in_directory: true
     files:
     - LICENSE.md
     - README.md
@@ -66,6 +68,8 @@ nfpms:
     homepage: "https://github.com/chanzuckerberg/idseq"
     description: "A CLI for uploading samples to IDSeq"
     license: MIT
+    # Default without version for easy latest release linking
+    file_name_template: {{.PackageName}}_{{ .Os }}_{{.Arch}}{{if .Arm}}v{{.Arm}}{{end}}{{if .Mips}}_{{.Mips}}{{end}}
     formats:
       - deb
       - rpm

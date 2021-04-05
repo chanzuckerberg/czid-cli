@@ -37,7 +37,9 @@ release:
   prerelease: true
 
 archives:
-  - wrap_in_directory: true
+  # Default without version for easy latest release linking
+  - name_template: "{{.ProjectName}}_{{.Os}}_{{.Arch}}{{if .Arm}}v{{.Arm}}{{end}}{{if .Mips}}_{{.Mips}}{{end}}"
+    wrap_in_directory: true
     files:
     - LICENSE.md
     - README.md
