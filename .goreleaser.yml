@@ -40,7 +40,7 @@ archives:
   - files:
     - LICENSE.md
     - README.md
-    - completions/**/*
+    - completions/bash
 
 brews:
 - description: "A CLI for uploading samples to IDSeq"
