@@ -1,8 +1,8 @@
 #!/bin/bash
 
-mkdir completions
+mkdir $1/completions
 
-$1 completion bash > completions/bash
-$1 completion zsh > completions/zsh
-$1 completion fish > completions/fish
-$1 completion powershell > completions/powershell
+$2 completion bash > $1/completions/bash
+$2 completion zsh > $1/completions/zsh
+$2 completion fish > $1/completions/fish
+$2 completion powershell > $1/completions/powershell
