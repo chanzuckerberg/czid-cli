@@ -40,6 +40,9 @@ archives:
   # Default without version for easy latest release linking
   - name_template: "{{.ProjectName}}_{{.Os}}_{{.Arch}}{{if .Arm}}v{{.Arm}}{{end}}{{if .Mips}}_{{.Mips}}{{end}}"
     wrap_in_directory: true
+    format_overrides:
+    - goos: windows
+      format: zip
     files:
     - LICENSE.md
     - README.md
@@ -47,6 +50,7 @@ archives:
     - zsh_completion
     - fish_completion
     - powershell_completion
+  
 
 checksum:
   name_template: "checksums.txt"
