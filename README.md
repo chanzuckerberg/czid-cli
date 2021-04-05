@@ -96,7 +96,7 @@ idseq accept-user-agreement
 
 This will print the user agreement and prompt you for your agreement.
 
-# Upload a Single Sample
+#### Upload a Single Sample
 
 You can use the IDSeq CLI to upload samples to upload a single sample to IDSeq. You can upload a single file for single end reads or two files for paired end reads. Supported file types: `.fastq`/`.fq`/`.fasta`/`.fa`/`.fastq.gz`/`.fq.gz`/`.fasta.gz`/`.fa.gz`.
 
@@ -134,7 +134,7 @@ idseq short-read-mngs upload-sample `
 
 Note: The sample name is optional. If it is not included it will be computed from your input file name based on the same rules as uploading multiple samples.
 
-# Upload Multiple Samples
+#### Upload Multiple Samples
 
 The IDSeq CLI can search a directory for read files and upload supported files as samples. Supported file types are: `.fastq`/`.fq`/`.fasta`/`.fa`/`.fastq.gz`/`.fq.gz`/`.fasta.gz`/`.fa.gz`. Sample names are computed based on the names of the files. Sample names the base name of the file with the extension, `_R1`, `_R2`, `_R1_001`, and `_R2_001` removed. If two files have the same sample name and one has `R1` and the other has `R2` the files will be uploaded to the same sample as paired reads. Since only the base name of the file and no parent directories are taken into account file names must be globally unique (except for the same sample's `R1` and `R2` files). Here are a few examples of sample names for various paths:
 
