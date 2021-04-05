@@ -1,6 +1,8 @@
 #!/bin/bash
 
-$1 completion bash > ./bash_completion
-$1 completion zsh > ./zsh_completion
-$1 completion fish > ./fish_completion
-$1 completion powershell > ./powershell_completion
+mkdir completions
+
+$1 completion bash > completions/bash
+$1 completion zsh > completions/zsh
+$1 completion fish > completions/fish
+$1 completion powershell > completions/powershell
