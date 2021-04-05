@@ -8,18 +8,73 @@ Rewrite of https://github.com/chanzuckerberg/idseq-cli, work in progress.
 
 ## Getting Started
 
-Currently this project is not ready for use. Getting Started instructions coming soon.
-
 ### Installation
 
 Currently only binaries are available. More types of packages coming soon.
 
+#### Linux
+
+There are lots of options to install on Linux.
+
+##### Debian Distributions (ex. Debian, Ubuntu, Linux Mint)
+
+1. Download our [latest .deb package](https://github.com/chanzuckerberg/idseq-cli-v2/releases/latest/download/idseq-cli-v2_linux_amd64.deb).
+1. (Alternatively) Download with curl: `curl -L https://github.com/chanzuckerberg/idseq-cli-v2/releases/latest/download/idseq-cli-v2_linux_amd64.deb -o idseq-cli-v2_linux_amd64.deb`
+1. Install the package: `sudo dpkg -i idseq-cli-v2_linux_amd64.deb`
+1. (Optional) Remove the package file `rm idseq-cli-v2_linux_amd64.deb`
+
+
+##### Fedora Distributions (ex. Centos, RHEL)
+
+1. Download our [latest .rpm package](https://github.com/chanzuckerberg/idseq-cli-v2/releases/latest/download/idseq-cli-v2_linux_amd64.rpm)
+1. (Alternatively) Download with curl: `curl -L https://github.com/chanzuckerberg/idseq-cli-v2/releases/latest/download/idseq-cli-v2_linux_amd64.rpm -o idseq-cli-v2_linux_amd64.rpm`
+1. Install the package: `sudo rpm -i s3parcp.rpm`
+1. (Optional) Remove the package file: `rm idseq-cli-v2_linux_amd64.rpm`
+
+##### Other Linux: Install via Homebrew for Linux
+
+1. Make sure you have [Homebrew for Linux](https://docs.brew.sh/Homebrew-on-Linux)
+1. Add the chanzuckerberg tap: `brew tap chanzuckerberg/tap`
+1. Install the package: `brew install s3parcp`
+
+##### Other Linux: Without Homebrew
+
+Follow the instructions for [installing from binaries](#from-binaries).
+
+#### MacOs
+
+idseq-cli-v2 is available via homebrew and natively supports Apple Silicon! (via the `darwin_arm64` binary)
+
+##### Install via Homebrew
+
+1. Make sure you have [Homebrew for Linux](https://docs.brew.sh/Homebrew-on-Linux)
+1. Add the chanzuckerberg tap: `brew tap chanzuckerberg/tap`
+1. Install the package: `brew install s3parcp`
+
+##### Without Homebrew
+
+Follow the instructions for [installing from binaries](#from-binaries).
+
+#### Windows
+
+Follow the instructions for [installing from binaries](#from-binaries).
+
 #### From Binaries
 
 1. Navigate to our [latest release](https://github.com/chanzuckerberg/idseq-cli-v2/releases/latest).
-1. The binaries will be under the `Assets` tab
-1. Download the one for your operating system and architecture
+1. Available binaries will be under the `Assets` tab as archives (`.tar.gz` for Linux + MacOS, `.zip` for Windows)
+1. Download appropriate archive for your operating system and architecture
 1. Unzip the file, the `idseq` executable will be inside
+
+    Linux + MacOS: `tar -xf path/to/archive.tar.gz`
+
+    Windows: `expand-archive -path 'c:\path\to\archive.zip' -destinationpath '.\idseq-cli-v2'`
+
+1. Files with shell completions are also inside so you can move them to the appropriate place for your shell
+
+
+Note on MacOS: Currently we don't sign our binary so you will need to manually remove the quarentine attribute from the binary: `sudo xattr -d com.apple.quarantine path/to/binary`
+
 
 ### Usage
 
