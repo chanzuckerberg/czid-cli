@@ -76,7 +76,9 @@ Follow the instructions for [installing from binaries](#from-binaries).
 Note on MacOS: Currently we don't sign our binary so you will need to manually remove the quarentine attribute from the binary: `sudo xattr -d com.apple.quarantine path/to/binary`
 
 
-### Usage
+### Basic Usage
+
+#### Setup
 
 First log in with your IDSeq account:
 
@@ -94,13 +96,21 @@ idseq accept-user-agreement
 
 This will print the user agreement and prompt you for your agreement.
 
+# Upload a Single Sample
+
+You can use the IDSeq CLI to upload samples to upload a single sample to IDSeq. You can upload a single file for single end reads or two files for paired end reads. Supported file types: `.fastq`/`.fq`/`.fasta`/`.fa`/`.fastq.gz`/`.fq.gz`/`.fasta.gz`/`.fa.gz`.
+
 Optionally, you can create a metadata CSV file for your sample. You can skip this step and specify your metadata with command line flags. For instructions on creating this file see:
 
 - Instructions: https://idseq.net/metadata/instructions
 - Metadata dictionary and supported host genomes: https://idseq.net/metadata/dictionary
 - Metadata CSV template: https://idseq.net/metadata/metadata_template_csv
 
-Upload a single sample to the short read MNGS pipeline:
+Be sure to set the sample name in the `Sample Name` column of the CSV to the same name you pass to the `upload-sample` command with `-s`/`--sample-name`. If you would like to specify your metadata entirely with `-m` flags you don't need to include a `--metadata-csv`. If you have specified all of your metadata in the metadata csv you don't need to include any `-m` flags. `-m` flags override metadata from the csv.
+
+Once you have set up you can use the `upload-sample` command to upload your sample to IDSeq.
+
+Linux + MacOS:
 
 ```bash
 idseq short-read-mngs upload-sample \
@@ -111,7 +121,59 @@ idseq short-read-mngs upload-sample \
   your_sample_R1.fastq.gz your_sample_R2.fastq.gz
 ```
 
-Note, R2 is optional if uploading single end reads. Supported file types: (.fastq/.fq/.fasta/.fa/.fastq.gz/.fq.gz/.fasta.gz/.fa.gz). If you would like to specify your metadata entirely with `-m` flags you don't need to include a `--metadata-csv`. If you have specified all of your metadata in the metadata csv you don't need to include any `-m` flags. `-m` flags override metadata from the csv.
+Windows:
+
+```Powershell
+idseq short-read-mngs upload-sample `
+  -p "Project Name" `
+  -s "Sample Name" `
+  --metadata-csv your_metadata.csv `
+  -m "Metadata Name=Metadata Value" `
+  your_sample_R1.fastq.gz your_sample_R2.fastq.gz
+```
+
+Note: The sample name is optional. If it is not included it will be computed from your input file name based on the same rules as uploading multiple samples.
+
+# Upload Multiple Samples
+
+The IDSeq CLI can search a directory for read files and upload supported files as samples. Supported file types are: `.fastq`/`.fq`/`.fasta`/`.fa`/`.fastq.gz`/`.fq.gz`/`.fasta.gz`/`.fa.gz`. Sample names are computed based on the names of the files. Sample names the base name of the file with the extension, `_R1`, `_R2`, `_R1_001`, and `_R2_001` removed. If two files have the same sample name and one has `R1` and the other has `R2` the files will be uploaded to the same sample as paired reads. Since only the base name of the file and no parent directories are taken into account file names must be globally unique (except for the same sample's `R1` and `R2` files). Here are a few examples of sample names for various paths:
+
+- `your_directory_of_samples/my_sample.fasta` => `my_sample`
+- `your_directory_of_samples/sample_one/sample_one_R1.fastq.gz` => `sample_one`
+- `your_directory_of_samples/sample_one/sample_one_R2.fastq.gz` => `sample_one` (pair of the above example)
+- `your_directory_of_samples/some_directory/some_other_directory/sample_two_R1_001.fa.gz` => `sample_two`
+
+This is the first pass of directory uploads and we would like to support more directory structures. If you have any suggestions for directory structure uploads [we'd love to hear from you](https://github.com/chanzuckerberg/idseq-cli-v2/issues).
+
+Optionally, you can create a metadata CSV file for your sample. You can skip this step and specify your metadata with command line flags. For instructions on creating this file see:
+
+- Instructions: https://idseq.net/metadata/instructions
+- Metadata dictionary and supported host genomes: https://idseq.net/metadata/dictionary
+- Metadata CSV template: https://idseq.net/metadata/metadata_template_csv
+
+To associate a row of metadata with a sample you must enter the correct sample name in the `Sample Name` column of the CSV. If you would like to specify your metadata entirely with `-m` flags you don't need to include a `--metadata-csv`. If you have specified all of your metadata in the metadata csv you don't need to include any `-m` flags. `-m` flags override metadata from the csv.
+
+Once you have set up you can use the `upload-samples` command to upload your directory to IDSeq.
+
+Linux + MacOS:
+
+```bash
+idseq short-read-mngs upload-samples \
+  -p 'Project Name' \
+  --metadata-csv your_metadata.csv \
+  -m 'Metadata Name=Metadata Value' \
+  your_directory_of_samples
+```
+
+Windows:
+
+```Powershell
+idseq short-read-mngs upload-samples `
+  -p "Project Name" `
+  --metadata-csv your_metadata.csv `
+  -m "Metadata Name=Metadata Value" `
+  your_directory_of_samples
+```
 
 ## Differences from version 1
 
