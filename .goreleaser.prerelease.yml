@@ -18,7 +18,7 @@ builds:
     - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultAuth0Host={{.Env.AUTH0_HOST}}
     - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq.defaultIDSeqBaseURL={{.Env.IDSEQ_BASE_URL}}
   hooks:
-    post: "scripts/generate_completions.sh {{.Env.GITHUB_WORKSPACE}} {{.Path}}"
+    post: "scripts/generate_completions.sh {{.Path}}"
 - binary: idseq
   env:
     - CGO_ENABLED=0
@@ -37,10 +37,14 @@ release:
   prerelease: true
 
 archives:
-  - files:
+  - wrap_in_directory: true
+    files:
     - LICENSE.md
     - README.md
-    - completions/**/*
+    - bash_completion
+    - zsh_completion
+    - fish_completion
+    - powershell_completion
 
 checksum:
   name_template: "checksums.txt"
