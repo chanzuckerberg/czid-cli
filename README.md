@@ -1,6 +1,6 @@
 # IDSeq CLI
 
-This project is under development and not yet stable.
+This project is under active development and in its beta phase. It should be fairly stable but there may be some issues. If you experience an issue please [let us know](https://github.com/chanzuckerberg/idseq-cli-v2/issues).
 
 A **C**ommand **L**ine **I**nterface for [IDSeq](https://idseq.net/). 
 
