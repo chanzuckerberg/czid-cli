@@ -4,7 +4,7 @@ This project is under active development and in its beta phase. It should be fai
 
 A **C**ommand **L**ine **I**nterface for [IDSeq](https://idseq.net/). 
 
-Rewrite of https://github.com/chanzuckerberg/idseq-cli, work in progress.
+Rewrite of https://github.com/chanzuckerberg/idseq-cli.
 
 ## Getting Started
 
