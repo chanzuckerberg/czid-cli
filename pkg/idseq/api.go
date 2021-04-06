@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/spf13/viper"
 
@@ -51,6 +52,11 @@ func request(method string, path string, query string, reqBody interface{}, resB
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
+	}
+	// TODO: don't exit, return an error type
+	if res.StatusCode == 401 || res.StatusCode == 403 {
+		fmt.Print("not authenticated with idseq try running `idseq login`")
+		os.Exit(1)
 	}
 	if res.StatusCode >= 400 {
 		return fmt.Errorf("idseq API responded with error code %d", res.StatusCode)
