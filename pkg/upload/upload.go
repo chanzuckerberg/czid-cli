@@ -59,7 +59,8 @@ func (u *Uploader) runProgressBar(fileSize int64) {
 	var bar *pb.ProgressBar
 	for partNumber := range u.c.parts {
 		if minPartNumber == nil {
-			m := partNumber
+			// part numbers start at 1
+			m := partNumber - 1
 			minPartNumber = &m
 			bar = pb.Full.Start64(fileSize)
 			bar.Set(pb.Bytes, true)
