@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 type Metadata = map[string]interface{}
@@ -151,7 +152,7 @@ func SamplesFromDir(directory string, verbose bool) (map[string]SampleFiles, err
 	})
 	for sampleName, pair := range pairs {
 		if verbose {
-			fmt.Printf("detected sample: %s", sampleName)
+			fmt.Printf("detected sample: %s\n", sampleName)
 		}
 		if pair.R1 != "" && pair.R2 == "" {
 			return pairs, fmt.Errorf("found R1 but not R2 for sample '%s': %s", sampleName, pair.R1)
@@ -171,7 +172,13 @@ func GeoSearchSuggestions(samplesMetadata *SamplesMetadata) error {
 				if !isString {
 					return fmt.Errorf("cannot get geo search suggestions for non-string value %v", value)
 				}
-				suggestion, err := GetGeoSearchSuggestion(stringValue, true)
+				isHuman := false
+				if host, hasHost := metadata["Host Organism"]; hasHost {
+					if hostString, isString := host.(string); isString {
+						isHuman = strings.ToLower(hostString) == "human"
+					}
+				}
+				suggestion, err := GetGeoSearchSuggestion(stringValue, isHuman)
 				if err != nil {
 					return err
 				}

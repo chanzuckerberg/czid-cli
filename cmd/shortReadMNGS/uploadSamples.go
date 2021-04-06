@@ -3,6 +3,7 @@ package shortReadMNGS
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -37,19 +38,19 @@ var uploadSamplesCmd = &cobra.Command{
 		}
 		sampleFiles, err := idseq.SamplesFromDir(directory, verbose)
 		if err != nil {
-			return err
+			log.Fatal(err)
 		}
 
 		projectID, err := idseq.GetProjectID(projectName)
 		if err != nil {
-			return err
+			log.Fatal(err)
 		}
 
 		samplesMetadata := idseq.SamplesMetadata{}
 		if metadataCSVPath != "" {
 			samplesMetadata, err = idseq.CSVMetadata(metadataCSVPath)
 			if err != nil {
-				return err
+				log.Fatal(err)
 			}
 			for sampleName := range samplesMetadata {
 				if _, hasSampleName := sampleFiles[sampleName]; !hasSampleName {
@@ -69,19 +70,19 @@ var uploadSamplesCmd = &cobra.Command{
 		}
 		err = idseq.GeoSearchSuggestions(&samplesMetadata)
 		if err != nil {
-			return err
+			log.Fatal(err)
 		}
 		err = idseq.ValidateSamplesMetadata(projectID, samplesMetadata)
 		if err != nil {
 			if err.Error() == "metadata validation failed" {
 				os.Exit(1)
 			}
-			return err
+			log.Fatal(err)
 		}
 
 		credentials, samples, err := idseq.CreateSamples(projectID, sampleFiles, samplesMetadata)
 		if err != nil {
-			return err
+			log.Fatal(err)
 		}
 
 		u := upload.NewUploader(credentials)
@@ -98,15 +99,15 @@ var uploadSamplesCmd = &cobra.Command{
 				}
 				err := u.UploadFile(filename, inputFile.S3Path, inputFile.MultipartUploadId)
 				if err != nil {
-					return err
+					log.Fatal(err)
 				}
 			}
 			err := idseq.MarkSampleUploaded(sample.ID, sample.Name)
 			if err != nil {
-				return err
+				log.Fatal(err)
 			}
 		}
-		return err
+		return nil
 	},
 }
 
