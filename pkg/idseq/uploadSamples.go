@@ -70,7 +70,7 @@ func CreateSamples(projectID int, sampleFiles map[string]SampleFiles, samplesMet
 		}
 
 		sample := createSamplesReqSample{
-			HostGenomeName:      samplesMetadata[sampleName]["Host Organism"].(string),
+			HostGenomeName:      samplesMetadata[sampleName].HostGenome,
 			InputFileAttributes: make([]createSamplesReqInputFile, len(filenames)),
 			Name:                sampleName,
 			ProjectID:           projectID,

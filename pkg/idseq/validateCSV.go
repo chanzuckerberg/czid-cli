@@ -135,7 +135,7 @@ func ValidateSamplesMetadata(projectID int, samplesMetadata SamplesMetadata) err
 	for sampleName, row := range samplesMetadata {
 		validatorRow := make([]interface{}, len(req.Metadata.Headers))
 		validatorRow[0] = sampleName
-		for name, value := range row {
+		for name, value := range row.Fields {
 			headerIndex, seenHeader := headerIndexes[name]
 			if !seenHeader {
 				req.Metadata.Headers = append(req.Metadata.Headers, name)

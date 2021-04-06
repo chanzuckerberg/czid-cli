@@ -2,6 +2,7 @@ package idseq
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -10,7 +11,62 @@ import (
 	"strings"
 )
 
-type Metadata = map[string]interface{}
+type Metadata struct {
+	HostGenome         string
+	collectionLocation string
+	CollectionLocation *GeoSearchSuggestion
+	Fields             map[string]string
+}
+
+var hostGenomeAliases map[string]bool = map[string]bool{
+	"host_genome":   true,
+	"Host Genome":   true,
+	"Host genome":   true,
+	"host genome":   true,
+	"host_organism": true,
+	"Host Organism": true,
+	"Host organism": true,
+	"host organism": true,
+}
+
+var collectionLocationAliases map[string]bool = map[string]bool{
+	"collection location": true,
+	"Collection Location": true,
+	"Collection location": true,
+	"collection_location": true,
+}
+
+func NewMetadata(m map[string]string) Metadata {
+	metadata := Metadata{Fields: make(map[string]string)}
+	return metadata.Update(m)
+}
+
+func (m Metadata) Update(fields map[string]string) Metadata {
+	newM := m
+	for k, v := range fields {
+		if hostGenomeAliases[k] {
+			newM.HostGenome = v
+		}
+		if collectionLocationAliases[k] {
+			newM.collectionLocation = v
+		}
+	}
+	return newM
+}
+
+func (m Metadata) MarshalJSON() ([]byte, error) {
+	interfaceMap := make(map[string]interface{}, len(m.Fields)+2)
+	for k, v := range m.Fields {
+		interfaceMap[k] = v
+	}
+	interfaceMap["collection_location"] = m.collectionLocation
+	return json.Marshal(interfaceMap)
+}
+
+func (m Metadata) IsHuman() bool {
+	return strings.ToLower(m.HostGenome) == "human"
+}
+
 type SamplesMetadata = map[string]Metadata
 
 func CSVMetadata(csvpath string) (SamplesMetadata, error) {
@@ -40,7 +96,7 @@ func CSVMetadata(csvpath string) (SamplesMetadata, error) {
 	}
 	for rowNum, row := range rows[1:] {
 		sampleName := ""
-		metadata := make(Metadata, len(headers))
+		metadata := make(map[string]string, len(headers))
 		for i, header := range headers {
 			if header == "Sample Name" {
 				if i >= len(row) {
@@ -55,7 +111,7 @@ func CSVMetadata(csvpath string) (SamplesMetadata, error) {
 				}
 			}
 		}
-		samplesMetadata[sampleName] = metadata
+		samplesMetadata[sampleName] = NewMetadata(metadata)
 	}
 	return samplesMetadata, nil
 }
@@ -166,26 +222,14 @@ func SamplesFromDir(directory string, verbose bool) (map[string]SampleFiles, err
 
 func GeoSearchSuggestions(samplesMetadata *SamplesMetadata) error {
 	for sampleName, metadata := range *samplesMetadata {
-		for name, value := range metadata {
-			if name == "Collection Location" {
-				stringValue, isString := value.(string)
-				if !isString {
-					return fmt.Errorf("cannot get geo search suggestions for non-string value %v", value)
-				}
-				isHuman := false
-				if host, hasHost := metadata["Host Organism"]; hasHost {
-					if hostString, isString := host.(string); isString {
-						isHuman = strings.ToLower(hostString) == "human"
-					}
-				}
-				suggestion, err := GetGeoSearchSuggestion(stringValue, isHuman)
-				if err != nil {
-					return err
-				}
-				if suggestion != (GeoSearchSuggestion{}) {
-					(*samplesMetadata)[sampleName][name] = suggestion
-				}
-			}
+		suggestion, err := GetGeoSearchSuggestion(metadata.collectionLocation, metadata.IsHuman())
+		if err != nil {
+			return err
+		}
+		if suggestion != (GeoSearchSuggestion{}) {
+			metadata := (*samplesMetadata)[sampleName]
+			metadata.CollectionLocation = &suggestion
+			(*samplesMetadata)[sampleName] = metadata
 		}
 	}
 	return nil

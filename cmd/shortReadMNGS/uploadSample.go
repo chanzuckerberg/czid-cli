@@ -26,10 +26,7 @@ var uploadSampleCmd = &cobra.Command{
 		if len(args) == 0 {
 			return errors.New("missing required argument: r1path")
 		}
-		metadata := make(idseq.Metadata, len(stringMetadata))
-		for k, v := range stringMetadata {
-			metadata[k] = v
-		}
+		metadata := idseq.NewMetadata(stringMetadata)
 		r1path := args[0]
 		r2path := ""
 		if len(args) > 1 {
@@ -62,7 +59,7 @@ var uploadSampleCmd = &cobra.Command{
 				}
 			}
 		}
-		if samplesMetadata[sampleName] == nil {
+		if metadata, hasMetadata := samplesMetadata[sampleName]; hasMetadata {
 			samplesMetadata[sampleName] = metadata
 		} else {
 			for name, value := range metadata {
