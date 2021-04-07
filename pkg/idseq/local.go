@@ -1,137 +1,13 @@
 package idseq
 
 import (
-	"encoding/csv"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
+
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg/metadata"
 )
-
-type Metadata struct {
-	HostGenome         string
-	collectionLocation string
-	CollectionLocation *GeoSearchSuggestion
-	Fields             map[string]string
-}
-
-var hostGenomeAliases map[string]bool = map[string]bool{
-	"host_genome":   true,
-	"Host Genome":   true,
-	"Host genome":   true,
-	"host genome":   true,
-	"host_organism": true,
-	"Host Organism": true,
-	"Host organism": true,
-	"host organism": true,
-}
-
-var collectionLocationAliases map[string]bool = map[string]bool{
-	"collection location": true,
-	"Collection Location": true,
-	"Collection location": true,
-	"collection_location": true,
-}
-
-func NewMetadata(m map[string]string) Metadata {
-	metadata := Metadata{Fields: make(map[string]string)}
-	return metadata.Update(m)
-}
-
-func (m Metadata) Update(fields map[string]string) Metadata {
-	newM := m
-	for k, v := range fields {
-		if hostGenomeAliases[k] {
-			newM.HostGenome = v
-		}
-
-		if collectionLocationAliases[k] {
-			newM.collectionLocation = v
-		} else {
-			newM.Fields[k] = v
-		}
-	}
-	return newM
-}
-
-func (a Metadata) Fuse(b Metadata) Metadata {
-	c := a.Update(b.Fields)
-
-	if b.collectionLocation != "" {
-		c.collectionLocation = b.collectionLocation
-	}
-
-	if b.CollectionLocation != nil {
-		c.CollectionLocation = b.CollectionLocation
-	}
-
-	return c
-}
-
-func (m Metadata) MarshalJSON() ([]byte, error) {
-	interfaceMap := make(map[string]interface{}, len(m.Fields)+2)
-	for k, v := range m.Fields {
-		interfaceMap[k] = v
-	}
-	interfaceMap["collection_location"] = m.collectionLocation
-	return json.Marshal(interfaceMap)
-}
-
-func (m Metadata) IsHuman() bool {
-	return strings.ToLower(m.HostGenome) == "human"
-}
-
-type SamplesMetadata = map[string]Metadata
-
-func CSVMetadata(csvpath string) (SamplesMetadata, error) {
-	samplesMetadata := SamplesMetadata{}
-	f, err := os.Open(csvpath)
-	if err != nil {
-		return samplesMetadata, err
-	}
-	reader := csv.NewReader(f)
-	rows, err := reader.ReadAll()
-	if err != nil {
-		return samplesMetadata, err
-	}
-	if len(rows) < 2 {
-		return samplesMetadata, nil
-	}
-	headers := rows[0]
-	hasSampleName := false
-	for _, header := range headers {
-		if header == "Sample Name" {
-			hasSampleName = true
-			break
-		}
-	}
-	if !hasSampleName {
-		return samplesMetadata, errors.New("column 'Sample Name' is required but it was not found")
-	}
-	for rowNum, row := range rows[1:] {
-		sampleName := ""
-		metadata := make(map[string]string, len(headers))
-		for i, header := range headers {
-			if header == "Sample Name" {
-				if i >= len(row) {
-					return samplesMetadata, fmt.Errorf("row %d is missing 'Sample Name'", rowNum)
-				}
-				sampleName = row[i]
-			} else {
-				if i >= len(row) {
-					metadata[header] = ""
-				} else {
-					metadata[header] = row[i]
-				}
-			}
-		}
-		samplesMetadata[sampleName] = NewMetadata(metadata)
-	}
-	return samplesMetadata, nil
-}
 
 var inputExp = regexp.MustCompile(`\.(fasta|fa|fastq|fq)(\.gz)?$`)
 
@@ -237,7 +113,7 @@ func SamplesFromDir(directory string, verbose bool) (map[string]SampleFiles, err
 	return pairs, err
 }
 
-func GeoSearchSuggestions(samplesMetadata *SamplesMetadata) error {
+func GeoSearchSuggestions(samplesMetadata *metadata.SamplesMetadata) error {
 	for sampleName, metadata := range *samplesMetadata {
 		suggestion, err := GetGeoSearchSuggestion(metadata.collectionLocation, metadata.IsHuman())
 		if err != nil {
