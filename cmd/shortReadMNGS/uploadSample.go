@@ -59,14 +59,8 @@ var uploadSampleCmd = &cobra.Command{
 				}
 			}
 		}
-		if metadata, hasMetadata := samplesMetadata[sampleName]; hasMetadata {
-			samplesMetadata[sampleName] = metadata
-		} else {
-			for name, value := range metadata {
-				samplesMetadata[sampleName][name] = value
-			}
-		}
 
+		samplesMetadata[sampleName] = metadata.Fuse(samplesMetadata[sampleName])
 		err = idseq.GeoSearchSuggestions(&samplesMetadata)
 		if err != nil {
 			log.Fatal(err)

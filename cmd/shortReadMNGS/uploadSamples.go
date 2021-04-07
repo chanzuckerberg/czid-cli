@@ -32,10 +32,7 @@ var uploadSamplesCmd = &cobra.Command{
 			return fmt.Errorf("too many positional arguments, (maximum 1), args: %v", args)
 		}
 		directory := args[0]
-		metadata := make(idseq.Metadata, len(stringMetadata))
-		for k, v := range stringMetadata {
-			metadata[k] = v
-		}
+		metadata := idseq.NewMetadata(stringMetadata)
 		sampleFiles, err := idseq.SamplesFromDir(directory, verbose)
 		if err != nil {
 			log.Fatal(err)
@@ -63,10 +60,8 @@ var uploadSamplesCmd = &cobra.Command{
 				samplesMetadata[sampleName] = idseq.Metadata{}
 			}
 		}
-		for sampleName := range samplesMetadata {
-			for name, value := range metadata {
-				samplesMetadata[sampleName][name] = value
-			}
+		for sampleName, m := range samplesMetadata {
+			samplesMetadata[sampleName] = m.Fuse(metadata)
 		}
 		err = idseq.GeoSearchSuggestions(&samplesMetadata)
 		if err != nil {

@@ -47,11 +47,28 @@ func (m Metadata) Update(fields map[string]string) Metadata {
 		if hostGenomeAliases[k] {
 			newM.HostGenome = v
 		}
+
 		if collectionLocationAliases[k] {
 			newM.collectionLocation = v
+		} else {
+			newM.Fields[k] = v
 		}
 	}
 	return newM
+}
+
+func (a Metadata) Fuse(b Metadata) Metadata {
+	c := a.Update(b.Fields)
+
+	if b.collectionLocation != "" {
+		c.collectionLocation = b.collectionLocation
+	}
+
+	if b.CollectionLocation != nil {
+		c.CollectionLocation = b.CollectionLocation
+	}
+
+	return c
 }
 
 func (m Metadata) MarshalJSON() ([]byte, error) {
