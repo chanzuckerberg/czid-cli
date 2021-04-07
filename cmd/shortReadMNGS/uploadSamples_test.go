@@ -16,7 +16,11 @@ func TestWithoutProjectID(t *testing.T) {
 	ShortReadMNGSCmd.SetOut(b)
 	ShortReadMNGSCmd.SetErr(e)
 	ShortReadMNGSCmd.SetArgs([]string{"upload-samples"})
-	ShortReadMNGSCmd.Execute()
+	err := ShortReadMNGSCmd.Execute()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	errOut, err := ioutil.ReadAll(e)
 	if err != nil {
 		t.Fatal(err)
