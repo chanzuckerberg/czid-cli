@@ -60,7 +60,7 @@ var uploadSampleCmd = &cobra.Command{
 			}
 		}
 
-		samplesMetadata[sampleName] = metadata.Fuse(samplesMetadata[sampleName])
+		samplesMetadata[sampleName] = samplesMetadata[sampleName].Fuse(metadata)
 		err = idseq.GeoSearchSuggestions(&samplesMetadata)
 		if err != nil {
 			log.Fatal(err)

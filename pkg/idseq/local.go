@@ -5,8 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/metadata"
 )
 
 var inputExp = regexp.MustCompile(`\.(fasta|fa|fastq|fq)(\.gz)?$`)
@@ -111,19 +109,4 @@ func SamplesFromDir(directory string, verbose bool) (map[string]SampleFiles, err
 		}
 	}
 	return pairs, err
-}
-
-func GeoSearchSuggestions(samplesMetadata *metadata.SamplesMetadata) error {
-	for sampleName, metadata := range *samplesMetadata {
-		suggestion, err := GetGeoSearchSuggestion(metadata.collectionLocation, metadata.IsHuman())
-		if err != nil {
-			return err
-		}
-		if suggestion != (GeoSearchSuggestion{}) {
-			metadata := (*samplesMetadata)[sampleName]
-			metadata.CollectionLocation = &suggestion
-			(*samplesMetadata)[sampleName] = metadata
-		}
-	}
-	return nil
 }
