@@ -92,10 +92,10 @@ type SamplesMetadata = map[string]Metadata
 func CSVMetadata(csvpath string) (SamplesMetadata, error) {
 	samplesMetadata := SamplesMetadata{}
 	f, err := os.Open(csvpath)
-	defer f.Close()
 	if err != nil {
 		return samplesMetadata, err
 	}
+	defer f.Close()
 	reader := csv.NewReader(f)
 	rows, err := reader.ReadAll()
 	if err != nil {
