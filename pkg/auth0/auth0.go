@@ -249,57 +249,6 @@ func (c client) refreshIdToken(refreshToken string) (tokenResponse, error) {
 	return t, err
 }
 
-func authorize(token string) (string, error) {
-	params := map[string]string{
-		"audience":      "https://sandbox.idseq.net",
-		"response_type": "token",
-		"scope":         "openid",
-		"client_id":     clientID(),
-		"prompt":        "none",
-	}
-	query := url.Values{}
-	for k, v := range params {
-		query.Set(k, v)
-	}
-
-	u := url.URL{
-		Scheme:   "https",
-		Host:     auth0Host(),
-		Path:     "authorize",
-		RawQuery: query.Encode(),
-	}
-	req, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return "", err
-	}
-
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return "", err
-	}
-
-	fmt.Println(string(body))
-
-	fmt.Printf("%d\n", res.StatusCode)
-	return "", nil
-}
-
-func Authorize() (string, error) {
-	token, err := IdToken()
-	if err != nil {
-		return "", err
-	}
-	return authorize(token)
-}
-
 func (c client) idToken() (string, error) {
 	cache, err := c.getCache()
 	if err != nil {
@@ -310,7 +259,7 @@ func (c client) idToken() (string, error) {
 	if cache.IsSet(idTokenKey) && cache.IsSet(expiresAtKey) && expiresAt.After(time.Now()) {
 		return idToken, nil
 	}
-	if cache.IsSet(refreshTokenKey) {
+	if c.viper.IsSet(refreshTokenKey) {
 		refreshToken := c.viper.GetString(refreshTokenKey)
 		t, err := c.refreshIdToken(refreshToken)
 		writeErr := c.saveToken(t)
