@@ -1,64 +1,11 @@
 package idseq
 
 import (
-	"encoding/csv"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 )
-
-type Metadata = map[string]interface{}
-type SamplesMetadata = map[string]Metadata
-
-func CSVMetadata(csvpath string) (SamplesMetadata, error) {
-	samplesMetadata := SamplesMetadata{}
-	f, err := os.Open(csvpath)
-	if err != nil {
-		return samplesMetadata, err
-	}
-	reader := csv.NewReader(f)
-	rows, err := reader.ReadAll()
-	if err != nil {
-		return samplesMetadata, err
-	}
-	if len(rows) < 2 {
-		return samplesMetadata, nil
-	}
-	headers := rows[0]
-	hasSampleName := false
-	for _, header := range headers {
-		if header == "Sample Name" {
-			hasSampleName = true
-			break
-		}
-	}
-	if !hasSampleName {
-		return samplesMetadata, errors.New("column 'Sample Name' is required but it was not found")
-	}
-	for rowNum, row := range rows[1:] {
-		sampleName := ""
-		metadata := make(Metadata, len(headers))
-		for i, header := range headers {
-			if header == "Sample Name" {
-				if i >= len(row) {
-					return samplesMetadata, fmt.Errorf("row %d is missing 'Sample Name'", rowNum)
-				}
-				sampleName = row[i]
-			} else {
-				if i >= len(row) {
-					metadata[header] = ""
-				} else {
-					metadata[header] = row[i]
-				}
-			}
-		}
-		samplesMetadata[sampleName] = metadata
-	}
-	return samplesMetadata, nil
-}
 
 var inputExp = regexp.MustCompile(`\.(fasta|fa|fastq|fq)(\.gz)?$`)
 
@@ -162,31 +109,4 @@ func SamplesFromDir(directory string, verbose bool) (map[string]SampleFiles, err
 		}
 	}
 	return pairs, err
-}
-
-func GeoSearchSuggestions(samplesMetadata *SamplesMetadata) error {
-	for sampleName, metadata := range *samplesMetadata {
-		for name, value := range metadata {
-			if name == "Collection Location" {
-				stringValue, isString := value.(string)
-				if !isString {
-					return fmt.Errorf("cannot get geo search suggestions for non-string value %v", value)
-				}
-				isHuman := false
-				if host, hasHost := metadata["Host Organism"]; hasHost {
-					if hostString, isString := host.(string); isString {
-						isHuman = strings.ToLower(hostString) == "human"
-					}
-				}
-				suggestion, err := GetGeoSearchSuggestion(stringValue, isHuman)
-				if err != nil {
-					return err
-				}
-				if suggestion != (GeoSearchSuggestion{}) {
-					(*samplesMetadata)[sampleName][name] = suggestion
-				}
-			}
-		}
-	}
-	return nil
 }

@@ -129,13 +129,14 @@ func ValidateSamplesMetadata(projectID int, samplesMetadata SamplesMetadata) err
 		})
 	}
 
-	headerIndexes := map[string]int{"Sample Name": 0}
-	req.Metadata.Headers = []string{"Sample Name"}
+	headerIndexes := map[string]int{"Sample Name": 0, "Collection Location": 1}
+	req.Metadata.Headers = []string{"Sample Name", "Collection Location"}
 	req.Metadata.Rows = make([][]interface{}, len(samplesMetadata))
 	for sampleName, row := range samplesMetadata {
 		validatorRow := make([]interface{}, len(req.Metadata.Headers))
 		validatorRow[0] = sampleName
-		for name, value := range row {
+		validatorRow[1] = row.CollectionLocation
+		for name, value := range row.fields {
 			headerIndex, seenHeader := headerIndexes[name]
 			if !seenHeader {
 				req.Metadata.Headers = append(req.Metadata.Headers, name)
