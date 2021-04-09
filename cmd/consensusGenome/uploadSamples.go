@@ -1,4 +1,4 @@
-package shortReadMNGS
+package consensusGenome
 
 import (
 	"errors"
@@ -28,6 +28,16 @@ var uploadSamplesCmd = &cobra.Command{
 		if len(args) > 1 {
 			return fmt.Errorf("too many positional arguments, (maximum 1), args: %v", args)
 		}
+		if technology == "" {
+			return errors.New("missing required argument: sequencing-platform")
+		}
+		if technology == "Illumina" && wetlabProtocol == "" {
+			return errors.New("missing required argument: wetlab-protocol")
+		}
+		if technology == "Nanopore" && wetlabProtocol != "" {
+			return errors.New("wetlab-protocol not supported for Nanopore")
+		}
+
 		directory := args[0]
 		sampleFiles, err := idseq.SamplesFromDir(directory, verbose)
 		if err != nil {
@@ -38,14 +48,14 @@ var uploadSamplesCmd = &cobra.Command{
 			stringMetadata,
 			projectName,
 			metadataCSVPath,
-			"short-read-mngs",
-			"",
-			"",
+			"consensus-genome",
+			technologies[technology],
+			wetlabProtocols[wetlabProtocol],
 		)
 	},
 }
 
 func init() {
-	ShortReadMNGSCmd.AddCommand(uploadSamplesCmd)
+	ConsensusGenomeCmd.AddCommand(uploadSamplesCmd)
 	loadSharedFlags(uploadSamplesCmd)
 }

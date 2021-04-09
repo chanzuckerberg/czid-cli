@@ -1,4 +1,4 @@
-package shortReadMNGS
+package consensusGenome
 
 import (
 	"errors"
@@ -44,21 +44,30 @@ var uploadSampleCmd = &cobra.Command{
 		if r1path == r2path {
 			return errors.New("r1 and r2 cannot be the same file")
 		}
+		if technology == "" {
+			return errors.New("missing required argument: sequencing-platform")
+		}
+		if technology == "Illumina" && wetlabProtocol == "" {
+			return errors.New("missing required argument: wetlab-protocol")
+		}
+		if technology == "Nanopore" && wetlabProtocol != "" {
+			return errors.New("wetlab-protocol not supported for Nanopore")
+		}
 
 		return idseq.UploadSamplesFlow(
 			sampleFiles,
 			stringMetadata,
 			projectName,
 			metadataCSVPath,
-			"short-read-mngs",
-			"",
-			"",
+			"consensus-genome",
+			technologies[technology],
+			wetlabProtocols[wetlabProtocol],
 		)
 	},
 }
 
 func init() {
-	ShortReadMNGSCmd.AddCommand(uploadSampleCmd)
+	ConsensusGenomeCmd.AddCommand(uploadSampleCmd)
 	loadSharedFlags(uploadSampleCmd)
 	uploadSampleCmd.Flags().StringVarP(&sampleName, "sample-name", "s", "", "Sample name. Optional, defaults to the base file name of r1path with extensions and _R1 removed")
 }
