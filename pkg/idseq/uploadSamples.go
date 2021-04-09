@@ -2,6 +2,7 @@ package idseq
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -51,6 +52,7 @@ type createSamplesResSample struct {
 type createSamplesRes struct {
 	Credentials createSamplesResCredentials `json:"credentials"`
 	Samples     []createSamplesResSample    `json:"samples"`
+	Errors      []string                    `json:"errors"`
 }
 
 // UploadInfo stores the data necessary to upload a file to s3
@@ -106,6 +108,14 @@ func CreateSamples(
 
 	res := createSamplesRes{}
 	err := request("POST", "samples/bulk_upload_with_metadata.json", "", req, &res)
+
+	if len(res.Errors) > 0 {
+		fmt.Println("encountered errors while uploading")
+		for _, e := range res.Errors {
+			fmt.Printf("  %s\n", e)
+		}
+		os.Exit(1)
+	}
 
 	credentials := aws.Credentials{
 		AccessKeyID:     res.Credentials.AccessKeyID,
