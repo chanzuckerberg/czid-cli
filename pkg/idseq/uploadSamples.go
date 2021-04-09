@@ -1,6 +1,7 @@
 package idseq
 
 import (
+	"fmt"
 	"path/filepath"
 	"time"
 
@@ -23,6 +24,9 @@ type createSamplesReqSample struct {
 	Name                string                      `json:"name"`
 	ProjectID           int                         `json:"project_id"`
 	Status              string                      `json:"status"`
+	Workflows           []string                    `json:"workflows"`
+	Technology          string                      `json:"technology"`
+	WetlabProtocol      string                      `json:"wetlab_protocol"`
 }
 
 type samplesReq struct {
@@ -56,7 +60,14 @@ type UploadInfo struct {
 }
 
 // CreateSamples creates samples on the back end and returns the necessary information to upload their files
-func CreateSamples(projectID int, sampleFiles map[string]SampleFiles, samplesMetadata SamplesMetadata) (aws.Credentials, []createSamplesResSample, error) {
+func CreateSamples(
+	projectID int,
+	sampleFiles map[string]SampleFiles,
+	samplesMetadata SamplesMetadata,
+	workflow string,
+	technology string,
+	wetlabProtocol string,
+) (aws.Credentials, []createSamplesResSample, error) {
 	req := samplesReq{
 		Metadata: samplesMetadata,
 		Client:   pkg.VersionNumber(),
@@ -69,12 +80,16 @@ func CreateSamples(projectID int, sampleFiles map[string]SampleFiles, samplesMet
 			filenames = []string{files.R1, files.R2}
 		}
 
+		fmt.Println(workflow)
 		sample := createSamplesReqSample{
 			HostGenomeName:      samplesMetadata[sampleName].HostGenome,
 			InputFileAttributes: make([]createSamplesReqInputFile, len(filenames)),
 			Name:                sampleName,
 			ProjectID:           projectID,
 			Status:              "created",
+			Workflows:           []string{workflow},
+			Technology:          technology,
+			WetlabProtocol:      wetlabProtocol,
 		}
 
 		for i, filename := range filenames {
