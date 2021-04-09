@@ -1,9 +1,11 @@
 package idseq
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/upload"
 )
@@ -76,8 +78,21 @@ func UploadSamplesFlow(
 				filename = sF.R1
 			} else if filepath.Base(sF.R2) == filepath.Base(inputFile.S3Path) {
 				filename = sF.R2
-			} else {
+			} else if filepath.Base(sF.Single) == filepath.Base(inputFile.S3Path) {
 				filename = sF.Single
+			} else {
+				filenames := []string{}
+				if sF.R1 != "" {
+					filenames = append(filenames, sF.R1)
+				}
+				if sF.R2 != "" {
+					filenames = append(filenames, sF.R2)
+				}
+				if sF.Single != "" {
+					filenames = append(filenames, sF.Single)
+				}
+
+				return fmt.Errorf("s3 path %s did not match any of %s", inputFile.S3Path, strings.Join(filenames, ", "))
 			}
 			err := u.UploadFile(filename, inputFile.S3Path, inputFile.MultipartUploadId)
 			if err != nil {
