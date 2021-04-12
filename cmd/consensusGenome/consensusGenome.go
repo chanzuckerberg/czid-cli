@@ -19,6 +19,8 @@ var technologies = map[string]string{
 	"Illumina": "Illumina",
 	"Nanopore": "ONT",
 }
+var technologyOptions = make([]string, 0, len(technologies))
+var technologyOptionsString = ""
 
 var wetlabProtocols = map[string]string{
 	"ARTIC v3 - Short Amplicons (275 bp)": "artic_short_amplicons",
@@ -28,6 +30,9 @@ var wetlabProtocols = map[string]string{
 	"MSSPE":                               "msspe",
 	"SNAP":                                "snap",
 }
+
+var wetlabProtocolOptions = make([]string, 0, len(wetlabProtocol))
+var wetlabProtocolOptionsString = ""
 
 // ConsensusGenomeCmd represents the ConsensusGenome command
 var ConsensusGenomeCmd = &cobra.Command{
@@ -43,19 +48,19 @@ var ConsensusGenomeCmd = &cobra.Command{
 }
 
 func loadSharedFlags(c *cobra.Command) {
-	technologyOptions := make([]string, 0, len(technologies))
 	for key := range technologies {
 		technologyOptions = append(technologyOptions, key)
 	}
+	technologyOptionsString = fmt.Sprintf("\"%s\"", strings.Join(technologyOptions, "\", \""))
 
-	wetlabProtocolOptions := make([]string, 0, len(wetlabProtocol))
 	for key := range wetlabProtocols {
 		wetlabProtocolOptions = append(wetlabProtocolOptions, key)
 	}
+	wetlabProtocolOptionsString = fmt.Sprintf("\"%s\"", strings.Join(wetlabProtocolOptions, "\", \""))
 
 	c.Flags().StringVarP(&projectName, "project", "p", "", "Project name. Make sure the project is created on the website")
 	c.Flags().StringToStringVarP(&stringMetadata, "metadatum", "m", map[string]string{}, "metadatum name and value for your sample, ex. 'host=Human'")
 	c.Flags().StringVar(&metadataCSVPath, "metadata-csv", "", "Metadata local file path.")
-	c.Flags().StringVar(&technology, "sequencing-platform", "", fmt.Sprintf("Sequencing platform used to sequence the sample, options: '%s'", strings.Join(technologyOptions, "', '")))
-	c.Flags().StringVar(&wetlabProtocol, "wetlab-protocol", "", fmt.Sprintf("Wetlab protocol followed (only supported/required for illumina), options: '%s'", strings.Join(wetlabProtocolOptions, "', '")))
+	c.Flags().StringVar(&technology, "sequencing-platform", "", fmt.Sprintf("Sequencing platform used to sequence the sample, options: %s", technologyOptionsString))
+	c.Flags().StringVar(&wetlabProtocol, "wetlab-protocol", "", fmt.Sprintf("Wetlab protocol followed (only supported/required for illumina), options: %s", wetlabProtocolOptionsString))
 }
