@@ -47,8 +47,14 @@ var uploadSampleCmd = &cobra.Command{
 		if technology == "" {
 			return errors.New("missing required argument: sequencing-platform")
 		}
+		if _, has := technologies[technology]; !has {
+			return fmt.Errorf("technology \"%s\" not supported, please choose one of: %s", technology, technologyOptionsString)
+		}
 		if technology == "Illumina" && wetlabProtocol == "" {
 			return errors.New("missing required argument: wetlab-protocol")
+		}
+		if _, has := wetlabProtocols[wetlabProtocol]; wetlabProtocol != "" && !has {
+			return fmt.Errorf("wetlab protocol \"%s\" not supported, please choose one of: %s", wetlabProtocol, wetlabProtocolOptionsString)
 		}
 		if technology == "Nanopore" && wetlabProtocol != "" {
 			return errors.New("wetlab-protocol not supported for Nanopore")
