@@ -16,9 +16,10 @@ var uploadSampleCmd = &cobra.Command{
 	Short: "Upload a single sample",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if projectName == "" {
-			return errors.New("missing required argument: project")
+		if err := validateCommonArgs(); err != nil {
+			return err
 		}
+
 		if len(args) == 0 {
 			return errors.New("missing required argument: r1path")
 		}
@@ -43,21 +44,6 @@ var uploadSampleCmd = &cobra.Command{
 		}
 		if r1path == r2path {
 			return errors.New("r1 and r2 cannot be the same file")
-		}
-		if technology == "" {
-			return errors.New("missing required argument: sequencing-platform")
-		}
-		if _, has := technologies[technology]; !has {
-			return fmt.Errorf("technology \"%s\" not supported, please choose one of: %s", technology, technologyOptionsString)
-		}
-		if technology == "Illumina" && wetlabProtocol == "" {
-			return errors.New("missing required argument: wetlab-protocol")
-		}
-		if _, has := wetlabProtocols[wetlabProtocol]; wetlabProtocol != "" && !has {
-			return fmt.Errorf("wetlab protocol \"%s\" not supported, please choose one of: %s", wetlabProtocol, wetlabProtocolOptionsString)
-		}
-		if technology == "Nanopore" && wetlabProtocol != "" {
-			return errors.New("wetlab-protocol not supported for Nanopore")
 		}
 
 		return idseq.UploadSamplesFlow(
