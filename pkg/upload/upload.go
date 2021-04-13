@@ -2,17 +2,20 @@ package upload
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
-	"github.com/cheggaaa/pb/v3"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
+	"github.com/cheggaaa/pb/v3"
 )
 
 type partChannelClient struct {
@@ -31,8 +34,9 @@ func (c *partChannelClient) Do(r *http.Request) (*http.Response, error) {
 }
 
 type Uploader struct {
-	u *manager.Uploader
-	c *partChannelClient
+	u      *manager.Uploader
+	c      *partChannelClient
+	client *s3.Client
 }
 
 func NewUploader(creds aws.Credentials) Uploader {
@@ -50,7 +54,7 @@ func NewUploader(creds aws.Credentials) Uploader {
 	uploader := manager.NewUploader(client, func(u *manager.Uploader) {
 		u.LeavePartsOnError = true
 	})
-	return Uploader{u: uploader, c: &pC}
+	return Uploader{u: uploader, c: &pC, client: client}
 }
 
 func (u *Uploader) runProgressBar(fileSize int64) {
@@ -77,6 +81,26 @@ func (u *Uploader) runProgressBar(fileSize int64) {
 }
 
 func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId *string) error {
+	parsedPath, err := url.Parse(s3path)
+	if err != nil {
+		return err
+	}
+
+	key := util.TrimLeadingSlash(parsedPath.Path)
+
+	_, err = u.client.HeadObject(context.Background(), &s3.HeadObjectInput{
+		Bucket: &parsedPath.Host,
+		Key:    &key,
+	})
+
+	if err != nil {
+		var nfe *types.NoSuchKey
+		if errors.As(err, &nfe) {
+			fmt.Printf("skipping upload of %s, already uploaded\n", filename)
+			return nil
+		}
+	}
+
 	u.c.parts = make(chan int64)
 	defer close(u.c.parts)
 
@@ -91,13 +115,6 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 	}
 
 	go u.runProgressBar(stat.Size())
-
-	parsedPath, err := url.Parse(s3path)
-	if err != nil {
-		return err
-	}
-
-	key := util.TrimLeadingSlash(parsedPath.Path)
 
 	input := s3.PutObjectInput{
 		Bucket: &parsedPath.Host,
