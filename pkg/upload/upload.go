@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
 	"github.com/cheggaaa/pb/v3"
 )
@@ -94,13 +94,12 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 	})
 
 	if err != nil {
-		var nfe *types.NoSuchKey
-		if errors.As(err, &nfe) {
+		var nfe smithy.APIError
+		if errors.As(err, &nfe) && nfe.ErrorCode() == "NotFound" {
 			fmt.Printf("skipping upload of %s, already uploaded\n", filename)
 			return nil
 		}
 	}
-
 	u.c.parts = make(chan int64)
 	defer close(u.c.parts)
 
