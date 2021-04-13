@@ -95,11 +95,14 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 
 	if err != nil {
 		var nfe smithy.APIError
-		if errors.As(err, &nfe) && nfe.ErrorCode() == "NotFound" {
-			fmt.Printf("skipping upload of %s, already uploaded\n", filename)
-			return nil
+		if !errors.As(err, &nfe) || nfe.ErrorCode() != "NotFound" {
+			return err
 		}
+	} else {
+		fmt.Printf("skipping upload of %s, already uploaded\n", filename)
+		return nil
 	}
+
 	u.c.parts = make(chan int64)
 	defer close(u.c.parts)
 
