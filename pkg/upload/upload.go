@@ -95,7 +95,11 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 
 	if err != nil {
 		var nfe smithy.APIError
-		if !errors.As(err, &nfe) || nfe.ErrorCode() != "NotFound" {
+		// if our permissions give us access to specific resources, and those
+		//   resources don't exist we get Forbidden instead of NotFound. This
+		//   is how our permissions are by default so Forbidden is required here.
+		if !errors.As(err, &nfe) || (nfe.ErrorCode() != "NotFound" && nfe.ErrorCode() != "Forbidden") {
+			fmt.Println(nfe.ErrorCode())
 			return err
 		}
 	} else {

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/spf13/viper"
 
@@ -140,6 +141,23 @@ type GeoSearchSuggestion struct {
 	// OSMID           int64   `json:"osm_id"`
 	// OSMType         string  `json:"osm_type"`
 	// LocationID      int64   `json:"locationiq_id"`
+}
+
+func (g GeoSearchSuggestion) String() string {
+	places := []string{}
+	if g.CityName != "" {
+		places = append(places, g.CityName)
+	}
+	if g.SubdivisionName != "" {
+		places = append(places, g.SubdivisionName)
+	}
+	if g.StateName != "" {
+		places = append(places, g.StateName)
+	}
+	if g.CountryName != "" {
+		places = append(places, g.CountryName)
+	}
+	return strings.Join(places, ", ")
 }
 
 func GetGeoSearchSuggestion(queryStr string, isHuman bool) (GeoSearchSuggestion, error) {

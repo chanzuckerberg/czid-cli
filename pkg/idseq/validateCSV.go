@@ -59,14 +59,7 @@ func (mI *validateCSVResIssue) UnmarshalJSON(data []byte) error {
 			row := row.([]interface{})
 			mI.DetailedIssue.Rows[i] = make([]string, len(row))
 			for j, val := range row {
-				switch val := val.(type) {
-				case string:
-					mI.DetailedIssue.Rows[i][j] = val
-				case float64:
-					mI.DetailedIssue.Rows[i][j] = fmt.Sprint(val)
-				default:
-					return fmt.Errorf("expected elements of metadata issue rows to be strings or numbers but %s contained an element of a different type", string(data))
-				}
+				mI.DetailedIssue.Rows[i][j] = fmt.Sprint(val)
 			}
 		}
 	default:
@@ -115,9 +108,15 @@ func (i validateCSVResIssues) friendlyPrint() {
 
 }
 
+type validateCSVResHostGenome struct {
+	Name string       `json:"name"`
+	User *interface{} `json:"user"`
+}
+
 type validateCSVRes struct {
-	Status string               `json:"status"`
-	Issues validateCSVResIssues `json:"issues"`
+	Status         string                     `json:"status"`
+	Issues         validateCSVResIssues       `json:"issues"`
+	NewHostGenomes []validateCSVResHostGenome `json:"newHostGenomes"`
 }
 
 func ValidateSamplesMetadata(projectID int, samplesMetadata SamplesMetadata) error {
@@ -135,7 +134,11 @@ func ValidateSamplesMetadata(projectID int, samplesMetadata SamplesMetadata) err
 	for sampleName, row := range samplesMetadata {
 		validatorRow := make([]interface{}, len(req.Metadata.Headers))
 		validatorRow[0] = sampleName
-		validatorRow[1] = row.CollectionLocation
+		if row.CollectionLocation != (GeoSearchSuggestion{}) {
+			validatorRow[1] = row.CollectionLocation
+		} else {
+			validatorRow[1] = ""
+		}
 		for name, value := range row.fields {
 			headerIndex, seenHeader := headerIndexes[name]
 			if !seenHeader {
@@ -156,6 +159,27 @@ func ValidateSamplesMetadata(projectID int, samplesMetadata SamplesMetadata) err
 	}
 
 	res.Issues.friendlyPrint()
+
+	// HACK: new host genomes is a misnomer, all host genomes are returned
+	//   new ones have no user
+	hasNewHostGenomes := false
+	for _, hostGenome := range res.NewHostGenomes {
+		if hostGenome.User != nil {
+			hasNewHostGenomes = true
+			break
+		}
+	}
+	if hasNewHostGenomes {
+		fmt.Println(`some of your host organisms were not found in IDSeq
+host filtering will only filter out ERCC reads
+confirm these host organisms are correct:`)
+		for _, hostGenome := range res.NewHostGenomes {
+			if hostGenome.User != nil {
+				fmt.Printf("  %s\n", hostGenome.Name)
+			}
+		}
+	}
+
 	if len(res.Issues.Errors) > 0 {
 		return errors.New("metadata validation failed")
 	}

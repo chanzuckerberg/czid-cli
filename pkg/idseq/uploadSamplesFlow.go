@@ -39,7 +39,7 @@ func UploadSamplesFlow(
 	}
 	for sampleName := range sampleFiles {
 		if _, hasMetadata := samplesMetadata[sampleName]; !hasMetadata {
-			samplesMetadata[sampleName] = Metadata{}
+			samplesMetadata[sampleName] = NewMetadata(map[string]string{})
 		}
 	}
 	for sampleName, m := range samplesMetadata {

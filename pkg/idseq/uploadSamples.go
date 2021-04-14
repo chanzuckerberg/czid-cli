@@ -82,7 +82,6 @@ func CreateSamples(
 			filenames = []string{files.R1, files.R2}
 		}
 
-		fmt.Println(workflow)
 		sample := createSamplesReqSample{
 			HostGenomeName:      samplesMetadata[sampleName].HostGenome,
 			InputFileAttributes: make([]createSamplesReqInputFile, len(filenames)),

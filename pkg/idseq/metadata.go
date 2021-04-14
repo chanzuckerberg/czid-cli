@@ -73,18 +73,15 @@ func (m Metadata) MarshalJSON() ([]byte, error) {
 	for k, v := range m.fields {
 		interfaceMap[k] = v
 	}
-	interfaceMap["Collection Location"] = m.CollectionLocation
+	if m.CollectionLocation != (GeoSearchSuggestion{}) {
+		interfaceMap["Collection Location"] = m.CollectionLocation
+	}
+
 	return json.Marshal(interfaceMap)
 }
 
 func (m Metadata) isHuman() bool {
 	return strings.ToLower(m.HostGenome) == "human"
-}
-
-func (m Metadata) withSuggestedLocation() (Metadata, error) {
-	suggestion, err := GetGeoSearchSuggestion(m.rawCollectionLocation, m.isHuman())
-	m.CollectionLocation = suggestion
-	return m, err
 }
 
 type SamplesMetadata = map[string]Metadata
@@ -138,12 +135,30 @@ func CSVMetadata(csvpath string) (SamplesMetadata, error) {
 }
 
 func GeoSearchSuggestions(samplesMetadata *SamplesMetadata) error {
+	remapping := make(map[string]GeoSearchSuggestion, len(*samplesMetadata))
 	for sampleName, metadata := range *samplesMetadata {
-		m, err := metadata.withSuggestedLocation()
+		if c, has := remapping[metadata.rawCollectionLocation]; has {
+			metadata.CollectionLocation = c
+			(*samplesMetadata)[sampleName] = metadata
+			continue
+		}
+		suggestion, err := GetGeoSearchSuggestion(
+			metadata.rawCollectionLocation,
+			metadata.isHuman(),
+		)
 		if err != nil {
 			return err
 		}
-		(*samplesMetadata)[sampleName] = m
+		metadata.CollectionLocation = suggestion
+		(*samplesMetadata)[sampleName] = metadata
+		remapping[metadata.rawCollectionLocation] = suggestion
 	}
+
+	for o, n := range remapping {
+		if o != n.String() {
+			fmt.Printf("  replacing location \"%s\" with \"%s\"\n", o, n.String())
+		}
+	}
+
 	return nil
 }
