@@ -109,8 +109,8 @@ func (i validateCSVResIssues) friendlyPrint() {
 }
 
 type validateCSVResHostGenome struct {
-	Name string       `json:"name"`
-	User *interface{} `json:"user"`
+	Name         string `json:"name"`
+	ShowAsOption bool   `json:"showAsOption"`
 }
 
 type validateCSVRes struct {
@@ -161,10 +161,10 @@ func ValidateSamplesMetadata(projectID int, samplesMetadata SamplesMetadata) err
 	res.Issues.friendlyPrint()
 
 	// HACK: new host genomes is a misnomer, all host genomes are returned
-	//   new ones have no user
+	//   new ones will have ShowAsOption = false
 	hasNewHostGenomes := false
 	for _, hostGenome := range res.NewHostGenomes {
-		if hostGenome.User != nil {
+		if !hostGenome.ShowAsOption {
 			hasNewHostGenomes = true
 			break
 		}
@@ -174,7 +174,7 @@ func ValidateSamplesMetadata(projectID int, samplesMetadata SamplesMetadata) err
 host filtering will only filter out ERCC reads
 confirm these host organisms are correct:`)
 		for _, hostGenome := range res.NewHostGenomes {
-			if hostGenome.User != nil {
+			if !hostGenome.ShowAsOption {
 				fmt.Printf("  %s\n", hostGenome.Name)
 			}
 		}
