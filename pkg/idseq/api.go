@@ -19,32 +19,22 @@ import (
 
 var defaultIDSeqBaseURL = ""
 
-func request(method string, path string, query string, reqBody interface{}, resBody interface{}) error {
+func authorizedRequest(req *http.Request) (*http.Response, error) {
 	token, err := auth0.IdToken()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	reqBodyBytes, err := json.Marshal(reqBody)
-	if err != nil {
-		return err
-	}
-
-	baseURL := defaultIDSeqBaseURL
+	baseURLString := defaultIDSeqBaseURL
 	if viper.IsSet("idseq_base_url") {
-		baseURL = viper.GetString("idseq_base_url")
+		baseURLString = viper.GetString("idseq_base_url")
 	}
-	u, err := url.Parse(baseURL)
+	baseURL, err := url.Parse(baseURLString)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	u.Path = path
-	u.RawQuery = query
-
-	req, err := http.NewRequest(method, u.String(), bytes.NewReader(reqBodyBytes))
-	if err != nil {
-		return err
-	}
+	req.URL.Scheme = baseURL.Scheme
+	req.URL.Host = baseURL.Host
 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 	req.Header.Add("Accept", "application/json")
@@ -52,15 +42,39 @@ func request(method string, path string, query string, reqBody interface{}, resB
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return res, err
 	}
+
 	// TODO: don't exit, return an error type
 	if res.StatusCode == 401 || res.StatusCode == 403 {
 		fmt.Print("not authenticated with idseq try running `idseq login`")
 		os.Exit(1)
 	}
 	if res.StatusCode >= 400 {
-		return fmt.Errorf("idseq API responded with error code %d", res.StatusCode)
+		return res, fmt.Errorf("idseq API responded with error code %d", res.StatusCode)
+	}
+
+	return res, nil
+}
+
+func request(method string, path string, query string, reqBody interface{}, resBody interface{}) error {
+	reqBodyBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return err
+	}
+
+	u := url.URL{
+		Path:     path,
+		RawQuery: query,
+	}
+	req, err := http.NewRequest(method, u.String(), bytes.NewReader(reqBodyBytes))
+	if err != nil {
+		return err
+	}
+
+	res, err := authorizedRequest(req)
+	if err != nil {
+		return err
 	}
 	defer res.Body.Close()
 
