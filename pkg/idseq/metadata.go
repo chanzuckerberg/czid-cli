@@ -142,7 +142,7 @@ func GeoSearchSuggestions(samplesMetadata *SamplesMetadata) error {
 			(*samplesMetadata)[sampleName] = metadata
 			continue
 		}
-		suggestion, err := GetGeoSearchSuggestion(
+		suggestion, err := DefaultClient.GetGeoSearchSuggestion(
 			metadata.rawCollectionLocation,
 			metadata.isHuman(),
 		)

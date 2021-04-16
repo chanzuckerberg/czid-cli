@@ -43,7 +43,7 @@ var generateMetadataTemplateCmd = &cobra.Command{
 			i++
 		}
 
-		templateCSV, err := idseq.GetTemplateCSV(sampleNames, metadata.HostGenome)
+		templateCSV, err := idseq.DefaultClient.GetTemplateCSV(sampleNames, metadata.HostGenome)
 		if err != nil {
 			log.Fatal(err)
 		}

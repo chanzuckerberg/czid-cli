@@ -58,7 +58,7 @@ type tokenResponse struct {
 	Scope        string    `json:"scope"`
 }
 
-func (c client) saveToken(t tokenResponse) error {
+func (c *Client) saveToken(t tokenResponse) error {
 	if t.RefreshToken != "" {
 		c.viper.Set(refreshTokenKey, t.RefreshToken)
 	}
@@ -130,20 +130,26 @@ func formPost(path string, params map[string]string, r interface{}) error {
 	}
 }
 
-type client struct {
+type Auth0 interface {
+	IDToken() (string, error)
+	Login(headless bool, persistent bool) error 
+	Secret() (string, bool)
+}
+
+type Client struct {
 	formPost func(path string, params map[string]string, r interface{}) error
 	viper    *viper.Viper
 	cache    *viper.Viper
 }
 
-func (c client) getCache() (*viper.Viper, error) {
+func (c *Client) getCache() (*viper.Viper, error) {
 	if c.cache != nil {
 		return c.cache, nil
 	}
 	return util.ViperCache()
 }
 
-var defaultClient = client{
+var DefaultClient = &Client{
 	formPost: formPost,
 	viper:    viper.GetViper(),
 }
@@ -165,7 +171,7 @@ func addSeconds(t time.Time, s int) time.Time {
 	return t.Add(time.Duration(s) * time.Second)
 }
 
-func (c client) requestDeviceCode(persistent bool) (deviceCodeResponse, error) {
+func (c *Client) requestDeviceCode(persistent bool) (deviceCodeResponse, error) {
 	var d deviceCodeResponse
 	audience := url.URL{
 		Scheme: "https",
@@ -199,7 +205,7 @@ func promptDeviceActivation(verificantionURIComplete string, headless bool) {
 	}
 }
 
-func (c client) requestToken(deviceCode string) (tokenResponse, error) {
+func (c *Client) requestToken(deviceCode string) (tokenResponse, error) {
 	var t tokenResponse
 	params := map[string]string{
 		"client_id":   clientID(),
@@ -212,7 +218,7 @@ func (c client) requestToken(deviceCode string) (tokenResponse, error) {
 	return t, err
 }
 
-func (c client) pollForTokens(interval time.Duration, expiresAt time.Time, deviceCode string) (tokenResponse, error) {
+func (c *Client) pollForTokens(interval time.Duration, expiresAt time.Time, deviceCode string) (tokenResponse, error) {
 	var tR tokenResponse
 	var err error
 	ticker := time.NewTicker(interval)
@@ -236,7 +242,7 @@ func (c client) pollForTokens(interval time.Duration, expiresAt time.Time, devic
 	return tR, nil
 }
 
-func (c client) refreshIdToken(refreshToken string) (tokenResponse, error) {
+func (c *Client) refreshIdToken(refreshToken string) (tokenResponse, error) {
 	var t tokenResponse
 	params := map[string]string{
 		"client_id":     clientID(),
@@ -249,7 +255,13 @@ func (c client) refreshIdToken(refreshToken string) (tokenResponse, error) {
 	return t, err
 }
 
-func (c client) idToken() (string, error) {
+// IDToken returns a valid auth0 access token
+// If a non-expired access token is found in the cache
+// that token is returned. Otherwise the secret/refresh
+// token from the application config is used to fetch
+// a fresh one. If there is no secret configured this
+// function errors.
+func (c *Client) IDToken() (string, error) {
 	cache, err := c.getCache()
 	if err != nil {
 		return "", nil
@@ -271,7 +283,11 @@ func (c client) idToken() (string, error) {
 	return "", fmt.Errorf("not authenticated, try running `idseq login` or adding your `secret` to %s manually", viper.GetViper().ConfigFileUsed())
 }
 
-func (c client) login(headless bool, persistent bool) error {
+// Login performs the auth0 device authorization flow:
+// https://auth0.com/docs/flows/call-your-api-using-the-device-authorization-flow
+// This function prompts the user to navigate to a URL or
+// directs the user there.
+func (c *Client) Login(headless bool, persistent bool) error {
 	d, err := c.requestDeviceCode(persistent)
 	if err != nil {
 		return err
@@ -292,30 +308,8 @@ func (c client) login(headless bool, persistent bool) error {
 	return err
 }
 
-func (c client) secret() (string, bool) {
-	return c.viper.GetString(refreshTokenKey), c.viper.IsSet(refreshTokenKey)
-}
-
-// IdToken returns a valid auth0 access token
-// If a non-expired access token is found in the cache
-// that token is returned. Otherwise the secret/refresh
-// token from the application config is used to fetch
-// a fresh one. If there is no secret configured this
-// function errors.
-func IdToken() (string, error) {
-	return defaultClient.idToken()
-}
-
-// Login performs the auth0 device authorization flow:
-// https://auth0.com/docs/flows/call-your-api-using-the-device-authorization-flow
-// This function prompts the user to navigate to a URL or
-// directs the user there.
-func Login(headless bool, persistent bool) error {
-	return defaultClient.login(headless, persistent)
-}
-
 // Secret returns the auth0 secret/refresh token and a boolean representing
 // whether the secret is defined.
-func Secret() (string, bool) {
-	return defaultClient.secret()
+func (c *Client) Secret() (string, bool) {
+	return c.viper.GetString(refreshTokenKey), c.viper.IsSet(refreshTokenKey)
 }

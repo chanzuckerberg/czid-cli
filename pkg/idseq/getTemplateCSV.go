@@ -7,7 +7,7 @@ import (
 	"net/url"
 )
 
-func GetTemplateCSV(sampleNames []string, hostGenome string) (*csv.Reader, error) {
+func (c *Client) GetTemplateCSV(sampleNames []string, hostGenome string) (*csv.Reader, error) {
 	query := url.Values{
 		"new_sample_names": sampleNames,
 		"host_genomes":     []string{hostGenome},
@@ -22,7 +22,7 @@ func GetTemplateCSV(sampleNames []string, hostGenome string) (*csv.Reader, error
 		return nil, err
 	}
 
-	res, err := authorizedRequest(req)
+	res, err := c.authorizedRequest(req)
 	if err != nil {
 		return nil, err
 	}
