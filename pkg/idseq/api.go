@@ -19,8 +19,23 @@ import (
 
 var defaultIDSeqBaseURL = ""
 
-func authorizedRequest(req *http.Request) (*http.Response, error) {
-	token, err := auth0.IdToken()
+// HTTPClient interface
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+type Client struct {
+	auth0 auth0.Auth0
+	httpClient HTTPClient
+}
+
+var DefaultClient = &Client{
+	auth0: auth0.DefaultClient,
+	httpClient: http.DefaultClient,
+}
+
+func (c *Client) authorizedRequest(req *http.Request) (*http.Response, error) {
+	token, err := c.auth0.IDToken()
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +55,7 @@ func authorizedRequest(req *http.Request) (*http.Response, error) {
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return res, err
 	}
@@ -57,12 +72,13 @@ func authorizedRequest(req *http.Request) (*http.Response, error) {
 	return res, nil
 }
 
-func request(method string, path string, query string, reqBody interface{}, resBody interface{}) error {
+func (c *Client) request(method string, path string, query string, reqBody interface{}, resBody interface{}) error {
 	reqBodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
 		return err
 	}
 
+	
 	u := url.URL{
 		Path:     path,
 		RawQuery: query,
@@ -72,7 +88,7 @@ func request(method string, path string, query string, reqBody interface{}, resB
 		return err
 	}
 
-	res, err := authorizedRequest(req)
+	res, err := c.authorizedRequest(req)
 	if err != nil {
 		return err
 	}
@@ -96,7 +112,7 @@ type updateRequest struct {
 	Sample updateRequestSample `json:"sample"`
 }
 
-func MarkSampleUploaded(sampleId int, sampleName string) error {
+func (c *Client) MarkSampleUploaded(sampleId int, sampleName string) error {
 	req := updateRequest{
 		Sample: updateRequestSample{
 			Id:     sampleId,
@@ -106,7 +122,7 @@ func MarkSampleUploaded(sampleId int, sampleName string) error {
 	}
 
 	var res updateRequest
-	return request("PUT", fmt.Sprintf("samples/%d.json", sampleId), "", req, &res)
+	return c.request("PUT", fmt.Sprintf("samples/%d.json", sampleId), "", req, &res)
 }
 
 type listProjectsRes struct{}
@@ -118,10 +134,10 @@ type listProjectsResp struct {
 	Projects []project `json:"projects"`
 }
 
-func GetProjectID(projectName string) (int, error) {
+func (c *Client) GetProjectID(projectName string) (int, error) {
 	query := url.Values{"basic": []string{"true"}}
 	var resp listProjectsResp
-	err := request("GET", "projects.json", query.Encode(), listProjectsRes{}, &resp)
+	err := c.request("GET", "projects.json", query.Encode(), listProjectsRes{}, &resp)
 	if err != nil {
 		return 0, err
 	}
@@ -174,10 +190,10 @@ func (g GeoSearchSuggestion) String() string {
 	return strings.Join(places, ", ")
 }
 
-func GetGeoSearchSuggestion(queryStr string, isHuman bool) (GeoSearchSuggestion, error) {
+func (c *Client) GetGeoSearchSuggestion(queryStr string, isHuman bool) (GeoSearchSuggestion, error) {
 	query := url.Values{"query": []string{queryStr}, "limit": []string{"1"}}
 	resp := []GeoSearchSuggestion{}
-	err := request(
+	err := c.request(
 		"GET",
 		"locations/external_search",
 		query.Encode(),

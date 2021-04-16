@@ -21,7 +21,7 @@ can't log in manually.
 WARNING: this is a long lived access token, be extremely
 careful while handling it.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		secret, hasSecret := auth0.Secret()
+		secret, hasSecret := auth0.DefaultClient.Secret()
 		if !hasSecret {
 			fmt.Println("no secret defined, try running 'idseq login' to generate one")
 		} else {

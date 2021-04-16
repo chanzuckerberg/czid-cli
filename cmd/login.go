@@ -35,7 +35,7 @@ at https://chanzuckerberg.zendesk.com/hc/en-us/requests/new.`,
 		if err != nil {
 			return err
 		}
-		return auth0.Login(headless, persistent)
+		return auth0.DefaultClient.Login(headless, persistent)
 	},
 }
 

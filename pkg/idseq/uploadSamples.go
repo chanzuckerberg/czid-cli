@@ -62,7 +62,7 @@ type UploadInfo struct {
 }
 
 // CreateSamples creates samples on the back end and returns the necessary information to upload their files
-func CreateSamples(
+func (c *Client) CreateSamples(
 	projectID int,
 	sampleFiles map[string]SampleFiles,
 	samplesMetadata SamplesMetadata,
@@ -106,7 +106,7 @@ func CreateSamples(
 	}
 
 	res := createSamplesRes{}
-	err := request("POST", "samples/bulk_upload_with_metadata.json", "", req, &res)
+	err := c.request("POST", "samples/bulk_upload_with_metadata.json", "", req, &res)
 
 	if len(res.Errors) > 0 {
 		fmt.Println("encountered errors while uploading")

@@ -20,7 +20,7 @@ func UploadSamplesFlow(
 	wetlabProtocol string,
 ) error {
 	metadata := NewMetadata(stringMetadata)
-	projectID, err := GetProjectID(projectName)
+	projectID, err := DefaultClient.GetProjectID(projectName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func UploadSamplesFlow(
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = ValidateSamplesMetadata(projectID, samplesMetadata)
+	err = DefaultClient.ValidateSamplesMetadata(projectID, samplesMetadata)
 	if err != nil {
 		if err.Error() == "metadata validation failed" {
 			os.Exit(1)
@@ -57,7 +57,7 @@ func UploadSamplesFlow(
 		log.Fatal(err)
 	}
 
-	credentials, samples, err := CreateSamples(
+	credentials, samples, err := DefaultClient.CreateSamples(
 		projectID,
 		sampleFiles,
 		samplesMetadata,
@@ -99,7 +99,7 @@ func UploadSamplesFlow(
 				log.Fatal(err)
 			}
 		}
-		err := MarkSampleUploaded(sample.ID, sample.Name)
+		err := DefaultClient.MarkSampleUploaded(sample.ID, sample.Name)
 		if err != nil {
 			log.Fatal(err)
 		}
