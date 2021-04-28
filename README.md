@@ -28,14 +28,14 @@ There are lots of options to install on Linux.
 
 1. Download our [latest .rpm package](https://github.com/chanzuckerberg/idseq-cli-v2/releases/latest/download/idseq-cli-v2_linux_amd64.rpm)
 1. (Alternatively) Download with curl: `curl -L https://github.com/chanzuckerberg/idseq-cli-v2/releases/latest/download/idseq-cli-v2_linux_amd64.rpm -o idseq-cli-v2_linux_amd64.rpm`
-1. Install the package: `sudo rpm -i s3parcp.rpm`
+1. Install the package: `sudo rpm -i idseq-cli-v2_linux_amd64.rpm`
 1. (Optional) Remove the package file: `rm idseq-cli-v2_linux_amd64.rpm`
 
 ##### Other Linux: Install via Homebrew for Linux
 
 1. Make sure you have [Homebrew for Linux](https://docs.brew.sh/Homebrew-on-Linux)
 1. Add the chanzuckerberg tap: `brew tap chanzuckerberg/tap`
-1. Install the package: `brew install s3parcp`
+1. Install the package: `brew install idseq-cli-v2`
 
 ##### Other Linux: Without Homebrew
 
@@ -49,7 +49,7 @@ idseq-cli-v2 is available via homebrew and natively supports Apple Silicon! (via
 
 1. Make sure you have [Homebrew for Linux](https://docs.brew.sh/Homebrew-on-Linux)
 1. Add the chanzuckerberg tap: `brew tap chanzuckerberg/tap`
-1. Install the package: `brew install s3parcp`
+1. Install the package: `brew install idseq-cli-v2`
 
 ##### Without Homebrew
 
