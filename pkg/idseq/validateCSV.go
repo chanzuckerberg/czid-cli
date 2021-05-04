@@ -119,7 +119,7 @@ type validateCSVRes struct {
 	NewHostGenomes []validateCSVResHostGenome `json:"newHostGenomes"`
 }
 
-func ValidateSamplesMetadata(projectID int, samplesMetadata SamplesMetadata) error {
+func (c *Client) ValidateSamplesMetadata(projectID int, samplesMetadata SamplesMetadata) error {
 	req := validateCSVReq{}
 	for sampleName := range samplesMetadata {
 		req.Samples = append(req.Samples, validateCSVReqSample{
@@ -153,7 +153,7 @@ func ValidateSamplesMetadata(projectID int, samplesMetadata SamplesMetadata) err
 	}
 
 	var res validateCSVRes
-	err := request("POST", "metadata/validate_csv_for_new_samples.json", "", req, &res)
+	err := c.request("POST", "metadata/validate_csv_for_new_samples.json", "", req, &res)
 	if err != nil {
 		return err
 	}

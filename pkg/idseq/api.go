@@ -19,48 +19,77 @@ import (
 
 var defaultIDSeqBaseURL = ""
 
-func request(method string, path string, query string, reqBody interface{}, resBody interface{}) error {
-	token, err := auth0.IdToken()
+// HTTPClient interface
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+type Client struct {
+	auth0      auth0.Auth0
+	httpClient HTTPClient
+}
+
+var DefaultClient = &Client{
+	auth0:      auth0.DefaultClient,
+	httpClient: http.DefaultClient,
+}
+
+func (c *Client) authorizedRequest(req *http.Request) (*http.Response, error) {
+	token, err := c.auth0.IDToken()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	reqBodyBytes, err := json.Marshal(reqBody)
-	if err != nil {
-		return err
-	}
-
-	baseURL := defaultIDSeqBaseURL
+	baseURLString := defaultIDSeqBaseURL
 	if viper.IsSet("idseq_base_url") {
-		baseURL = viper.GetString("idseq_base_url")
+		baseURLString = viper.GetString("idseq_base_url")
 	}
-	u, err := url.Parse(baseURL)
+	baseURL, err := url.Parse(baseURLString)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	u.Path = path
-	u.RawQuery = query
-
-	req, err := http.NewRequest(method, u.String(), bytes.NewReader(reqBodyBytes))
-	if err != nil {
-		return err
-	}
+	req.URL.Scheme = baseURL.Scheme
+	req.URL.Host = baseURL.Host
 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Content-Type", "application/json")
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return err
+		return res, err
 	}
+
 	// TODO: don't exit, return an error type
 	if res.StatusCode == 401 || res.StatusCode == 403 {
 		fmt.Print("not authenticated with idseq try running `idseq login`")
 		os.Exit(1)
 	}
 	if res.StatusCode >= 400 {
-		return fmt.Errorf("idseq API responded with error code %d", res.StatusCode)
+		return res, fmt.Errorf("idseq API responded with error code %d", res.StatusCode)
+	}
+
+	return res, nil
+}
+
+func (c *Client) request(method string, path string, query string, reqBody interface{}, resBody interface{}) error {
+	reqBodyBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return err
+	}
+
+	u := url.URL{
+		Path:     path,
+		RawQuery: query,
+	}
+	req, err := http.NewRequest(method, u.String(), bytes.NewReader(reqBodyBytes))
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+
+	res, err := c.authorizedRequest(req)
+	if err != nil {
+		return err
 	}
 	defer res.Body.Close()
 
@@ -82,7 +111,7 @@ type updateRequest struct {
 	Sample updateRequestSample `json:"sample"`
 }
 
-func MarkSampleUploaded(sampleId int, sampleName string) error {
+func (c *Client) MarkSampleUploaded(sampleId int, sampleName string) error {
 	req := updateRequest{
 		Sample: updateRequestSample{
 			Id:     sampleId,
@@ -92,7 +121,7 @@ func MarkSampleUploaded(sampleId int, sampleName string) error {
 	}
 
 	var res updateRequest
-	return request("PUT", fmt.Sprintf("samples/%d.json", sampleId), "", req, &res)
+	return c.request("PUT", fmt.Sprintf("samples/%d.json", sampleId), "", req, &res)
 }
 
 type listProjectsRes struct{}
@@ -104,10 +133,10 @@ type listProjectsResp struct {
 	Projects []project `json:"projects"`
 }
 
-func GetProjectID(projectName string) (int, error) {
+func (c *Client) GetProjectID(projectName string) (int, error) {
 	query := url.Values{"basic": []string{"true"}}
 	var resp listProjectsResp
-	err := request("GET", "projects.json", query.Encode(), listProjectsRes{}, &resp)
+	err := c.request("GET", "projects.json", query.Encode(), listProjectsRes{}, &resp)
 	if err != nil {
 		return 0, err
 	}
@@ -160,10 +189,10 @@ func (g GeoSearchSuggestion) String() string {
 	return strings.Join(places, ", ")
 }
 
-func GetGeoSearchSuggestion(queryStr string, isHuman bool) (GeoSearchSuggestion, error) {
+func (c *Client) GetGeoSearchSuggestion(queryStr string, isHuman bool) (GeoSearchSuggestion, error) {
 	query := url.Values{"query": []string{queryStr}, "limit": []string{"1"}}
 	resp := []GeoSearchSuggestion{}
-	err := request(
+	err := c.request(
 		"GET",
 		"locations/external_search",
 		query.Encode(),

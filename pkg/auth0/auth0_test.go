@@ -56,12 +56,12 @@ func TestLoginPersistent(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.Remove(cacheF.Name())
-	c := client{
+	c := Client{
 		formPost: mockFormPost,
 		viper:    v,
 		cache:    cache,
 	}
-	err = c.login(true, true)
+	err = c.Login(true, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,12 +91,12 @@ func TestLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.Remove(cacheF.Name())
-	c := client{
+	c := Client{
 		formPost: mockFormPost,
 		viper:    v,
 		cache:    cache,
 	}
-	err = c.login(true, false)
+	err = c.Login(true, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,10 +115,10 @@ func TestSecret(t *testing.T) {
 	}
 	defer os.Remove(f.Name())
 	v.Set("secret", "shh")
-	c := client{
+	c := Client{
 		viper: v,
 	}
-	secret, hasSecret := c.secret()
+	secret, hasSecret := c.Secret()
 	if !hasSecret {
 		t.Fatalf("should have secret but secret() returned false")
 	}
