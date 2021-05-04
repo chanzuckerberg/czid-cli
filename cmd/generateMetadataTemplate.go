@@ -88,6 +88,10 @@ var generateMetadataTemplateCmd = &cobra.Command{
 					writeRow[idx] = val
 				}
 			}
+			err = writer.Write(writeRow)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	},

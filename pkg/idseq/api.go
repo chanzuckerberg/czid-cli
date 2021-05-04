@@ -25,12 +25,12 @@ type HTTPClient interface {
 }
 
 type Client struct {
-	auth0 auth0.Auth0
+	auth0      auth0.Auth0
 	httpClient HTTPClient
 }
 
 var DefaultClient = &Client{
-	auth0: auth0.DefaultClient,
+	auth0:      auth0.DefaultClient,
 	httpClient: http.DefaultClient,
 }
 
@@ -52,8 +52,6 @@ func (c *Client) authorizedRequest(req *http.Request) (*http.Response, error) {
 	req.URL.Host = baseURL.Host
 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Content-Type", "application/json")
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
@@ -78,7 +76,6 @@ func (c *Client) request(method string, path string, query string, reqBody inter
 		return err
 	}
 
-	
 	u := url.URL{
 		Path:     path,
 		RawQuery: query,
@@ -87,6 +84,8 @@ func (c *Client) request(method string, path string, query string, reqBody inter
 	if err != nil {
 		return err
 	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
 
 	res, err := c.authorizedRequest(req)
 	if err != nil {
