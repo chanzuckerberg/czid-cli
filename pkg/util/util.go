@@ -87,3 +87,20 @@ func Tune() {
 	runtime.ReadMemStats(&memStats)
 	fmt.Printf("%v\n", memStats.TotalAlloc)
 }
+
+func StringSliceContains(slice []string, str string) bool {
+	for _, s := range slice {
+		if s == str {
+			return true
+		}
+	}
+	return false
+}
+
+func StringMapKeys(m map[string]string) []string {
+	keys := make([]string, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	return keys
+}

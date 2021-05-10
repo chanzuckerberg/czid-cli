@@ -106,7 +106,7 @@ func (c *Client) CreateSamples(
 	}
 
 	res := createSamplesRes{}
-	err := c.request("POST", "samples/bulk_upload_with_metadata.json", "", req, &res)
+	err := c.request("POST", "/samples/bulk_upload_with_metadata.json", "", req, &res)
 
 	if len(res.Errors) > 0 {
 		fmt.Println("encountered errors while uploading")

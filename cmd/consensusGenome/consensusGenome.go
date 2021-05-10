@@ -8,6 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
 )
 
 var projectName string
@@ -16,14 +18,13 @@ var metadataCSVPath string
 var technology string
 var wetlabProtocol string
 
-var technologies = map[string]string{
+var Technologies = map[string]string{
 	"Illumina": "Illumina",
 	"Nanopore": "ONT",
 }
-var technologyOptions []string
-var technologyOptionsString = ""
+var technologyOptionsString string
 
-var wetlabProtocols = map[string]string{
+var WetlabProtocols = map[string]string{
 	"ARTIC v3 - Short Amplicons (275 bp)": "artic_short_amplicons",
 	"ARTIC v3":                            "artic",
 	"AmpliSeq":                            "ampliseq",
@@ -31,9 +32,7 @@ var wetlabProtocols = map[string]string{
 	"MSSPE":                               "msspe",
 	"SNAP":                                "snap",
 }
-
-var wetlabProtocolOptions []string
-var wetlabProtocolOptionsString = ""
+var wetlabProtocolOptionsString string
 
 // ConsensusGenomeCmd represents the ConsensusGenome command
 var ConsensusGenomeCmd = &cobra.Command{
@@ -49,21 +48,15 @@ var ConsensusGenomeCmd = &cobra.Command{
 }
 
 func loadSharedFlags(c *cobra.Command) {
-	i := 0
-	technologyOptions = make([]string, len(technologies))
-	for key := range technologies {
-		technologyOptions[i] = key
-		i++
-	}
-	technologyOptionsString = fmt.Sprintf("\"%s\"", strings.Join(technologyOptions, "\", \""))
+	technologyOptionsString = fmt.Sprintf(
+		"\"%s\"",
+		strings.Join(util.StringMapKeys(Technologies), "\", \""),
+	)
 
-	i = 0
-	wetlabProtocolOptions = make([]string, len(wetlabProtocols))
-	for key := range wetlabProtocols {
-		wetlabProtocolOptions[i] = key
-		i++
-	}
-	wetlabProtocolOptionsString = fmt.Sprintf("\"%s\"", strings.Join(wetlabProtocolOptions, "\", \""))
+	wetlabProtocolOptionsString = fmt.Sprintf(
+		"\"%s\"",
+		strings.Join(util.StringMapKeys(WetlabProtocols), "\", \""),
+	)
 
 	c.Flags().StringVarP(&projectName, "project", "p", "", "Project name. Make sure the project is created on the website")
 	c.Flags().StringToStringVarP(&stringMetadata, "metadatum", "m", map[string]string{}, "metadatum name and value for your sample, ex. 'host=Human'")
@@ -79,13 +72,13 @@ func validateCommonArgs() error {
 	if technology == "" {
 		return errors.New("missing required argument: sequencing-platform")
 	}
-	if _, has := technologies[technology]; !has {
+	if _, has := Technologies[technology]; !has {
 		return fmt.Errorf("sequencing platform \"%s\" not supported, please choose one of: %s", technology, technologyOptionsString)
 	}
 	if technology == "Illumina" && wetlabProtocol == "" {
 		return errors.New("missing required argument: wetlab-protocol")
 	}
-	if _, has := wetlabProtocols[wetlabProtocol]; wetlabProtocol != "" && !has {
+	if _, has := WetlabProtocols[wetlabProtocol]; wetlabProtocol != "" && !has {
 		return fmt.Errorf("wetlab protocol \"%s\" not supported, please choose one of: %s", wetlabProtocol, wetlabProtocolOptionsString)
 	}
 	if technology == "Nanopore" && wetlabProtocol != "" {
