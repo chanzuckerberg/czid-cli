@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/chanzuckerberg/idseq-cli-v2/cmd/consensusGenome"
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0"
@@ -48,6 +49,14 @@ var guidedUploadCmd = &cobra.Command{
 		if err != nil {
 			io.WriteString(cmd.OutOrStdout(), "you are not currently logged in, please log in\n")
 			err = auth0.DefaultClient.Login(false, false)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		if strings.ToLower(viper.GetString("accepted_user_agreement")) != "y" {
+			RootCmd.SetArgs([]string{"accept-user-agreement"})
+			err = RootCmd.Execute()
 			if err != nil {
 				log.Fatal(err)
 			}
