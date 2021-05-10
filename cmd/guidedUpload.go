@@ -47,14 +47,16 @@ var guidedUploadCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := auth0.DefaultClient.IDToken()
 		if err != nil {
-			io.WriteString(cmd.OutOrStdout(), "you are not currently logged in, please log in\n")
-			err = auth0.DefaultClient.Login(false, false)
+			io.WriteString(cmd.OutOrStdout(), "You are not currently logged in, running `idseq login`\n")
+			RootCmd.SetArgs([]string{"login"})
+			err = RootCmd.Execute()
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
 
 		if strings.ToLower(viper.GetString("accepted_user_agreement")) != "y" {
+			io.WriteString(cmd.OutOrStdout(), "You have not accepted the user agreement, running `idseq accept-user-agreement`\n")
 			RootCmd.SetArgs([]string{"accept-user-agreement"})
 			err = RootCmd.Execute()
 			if err != nil {
@@ -133,6 +135,7 @@ var guidedUploadCmd = &cobra.Command{
 		)
 
 		uploadArgs = append(uploadArgs, "--metadata-csv", metadataFile)
+		io.WriteString(cmd.OutOrStdout(), fmt.Sprintf("Performing your upload, running `idseq %s`\n", strings.Join(" ", uploadArgs)))
 		RootCmd.SetArgs(uploadArgs)
 		err = RootCmd.Execute()
 		if err != nil {
