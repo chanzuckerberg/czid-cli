@@ -18,10 +18,10 @@ func generateMetadataTemplate(cmd *cobra.Command, output string, sampleNames []s
 	var writer *csv.Writer
 	if output != "" {
 		f, err := os.Create(output)
-		defer f.Close()
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer f.Close()
 		writer = csv.NewWriter(f)
 	} else {
 		writer = csv.NewWriter(cmd.OutOrStdout())
