@@ -1,9 +1,6 @@
 package idseq
 
 import (
-	"bytes"
-	"io/ioutil"
-	"net/http"
 	"testing"
 )
 
