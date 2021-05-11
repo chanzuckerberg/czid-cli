@@ -27,23 +27,11 @@ func (c *mockAuth0Client) Secret() (string, bool) {
 	return "secret", true
 }
 
-type mockHTTPClientGetTemplateCSV struct {
-	calls []*http.Request
-}
-
-func (c *mockHTTPClientGetTemplateCSV) Do(req *http.Request) (*http.Response, error) {
-	c.calls = append(c.calls, req)
-	body := ioutil.NopCloser(bytes.NewReader([]byte("hello world")))
-	return &http.Response{StatusCode: 200, Body: body}, nil
-}
-
 func TestGetTemplateCSV(t *testing.T) {
-	type mockHTTPClient struct {
-		calls []*http.Request
-	}
+	httpClient := newMockHTTPClient([]byte("hello world"))
 	apiClient := Client{
 		auth0:      &mockAuth0Client{},
-		httpClient: &mockHTTPClientGetTemplateCSV{calls: []*http.Request{}},
+		httpClient: &httpClient,
 	}
 
 	csv, err := apiClient.GetTemplateCSV([]string{"sample name"}, "human")

@@ -41,7 +41,10 @@ func (c *Client) GetMetadataForHostGenome(hostGenome string) ([]MetadataField, e
 	metadataFields := make([]MetadataField, len(res))
 	for i, f := range res {
 		var ex Example
-		json.Unmarshal([]byte(f.Examples), &ex)
+		err = json.Unmarshal([]byte(f.Examples), &ex)
+		if err != nil {
+			return []MetadataField{}, err
+		}
 		metadataFields[i] = MetadataField{
 			Name:        f.DisplayName,
 			Description: f.Description,

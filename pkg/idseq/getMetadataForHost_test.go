@@ -1,30 +1,19 @@
 package idseq
 
 import (
-	"bytes"
-	"io/ioutil"
-	"net/http"
 	"testing"
 )
 
-type mockHTTPClientGetMetadataForHost struct {
-	calls []*http.Request
-}
-
-func (c *mockHTTPClientGetMetadataForHost) Do(req *http.Request) (*http.Response, error) {
-	c.calls = append(c.calls, req)
-	body := ioutil.NopCloser(bytes.NewReader([]byte(`{
-  "display_name": "test",
-  "description": "desc",
-  "examples": "{\"all\": [\"example\"] }"
-}`)))
-	return &http.Response{StatusCode: 200, Body: body}, nil
-}
-
 func TestGetMetadataForHost(t *testing.T) {
+	response := []byte(`[{
+      "display_name": "test",
+      "description": "desc",
+      "examples": "{\"all\": [\"example\"] }"
+    }]`)
+	httpClient := newMockHTTPClient(response)
 	apiClient := Client{
 		auth0:      &mockAuth0Client{},
-		httpClient: &mockHTTPClientGetMetadataForHost{calls: []*http.Request{}},
+		httpClient: &httpClient,
 	}
 
 	fields, err := apiClient.GetMetadataForHostGenome("human")
@@ -46,5 +35,23 @@ func TestGetMetadataForHost(t *testing.T) {
 
 	if fields[0].Example.All[0] != "example" {
 		t.Errorf("expected option to be 'example' but it was '%s'", fields[0].Example.All[0])
+	}
+}
+
+func TestGetMetadataForHostParsingError(t *testing.T) {
+	response := []byte(`[{
+      "display_name": "test",
+      "description": "desc",
+      "examples": "{\"all\": [\"example] }"
+    }]`)
+	httpClient := newMockHTTPClient(response)
+	apiClient := Client{
+		auth0:      &mockAuth0Client{},
+		httpClient: &httpClient,
+	}
+
+	_, err := apiClient.GetMetadataForHostGenome("human")
+	if err == nil {
+		t.Errorf("expected error from invalid JSON  but error was nil")
 	}
 }
