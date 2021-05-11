@@ -8,6 +8,7 @@ import (
 	"path"
 
 	"github.com/chanzuckerberg/idseq-cli-v2/cmd/consensusGenome"
+	"github.com/chanzuckerberg/idseq-cli-v2/cmd/generateMetadataTemplate"
 	"github.com/chanzuckerberg/idseq-cli-v2/cmd/shortReadMNGS"
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
 	"github.com/spf13/cobra"
@@ -25,6 +26,7 @@ var RootCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(shortReadMNGS.ShortReadMNGSCmd)
 	RootCmd.AddCommand(consensusGenome.ConsensusGenomeCmd)
+	RootCmd.AddCommand(generateMetadataTemplate.GenerateMetadataTemplateCmd)
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

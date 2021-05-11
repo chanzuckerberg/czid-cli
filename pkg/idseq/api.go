@@ -121,7 +121,7 @@ func (c *Client) MarkSampleUploaded(sampleId int, sampleName string) error {
 	}
 
 	var res updateRequest
-	return c.request("PUT", fmt.Sprintf("samples/%d.json", sampleId), "", req, &res)
+	return c.request("PUT", fmt.Sprintf("/samples/%d.json", sampleId), "", req, &res)
 }
 
 type listProjectsRes struct{}
@@ -136,7 +136,7 @@ type listProjectsResp struct {
 func (c *Client) GetProjectID(projectName string) (int, error) {
 	query := url.Values{"basic": []string{"true"}}
 	var resp listProjectsResp
-	err := c.request("GET", "projects.json", query.Encode(), listProjectsRes{}, &resp)
+	err := c.request("GET", "/projects.json", query.Encode(), listProjectsRes{}, &resp)
 	if err != nil {
 		return 0, err
 	}
@@ -194,7 +194,7 @@ func (c *Client) GetGeoSearchSuggestion(queryStr string, isHuman bool) (GeoSearc
 	resp := []GeoSearchSuggestion{}
 	err := c.request(
 		"GET",
-		"locations/external_search",
+		"/locations/external_search",
 		query.Encode(),
 		GetGeoSearchSuggestionReq{},
 		&resp,

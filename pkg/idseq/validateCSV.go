@@ -153,7 +153,7 @@ func (c *Client) ValidateSamplesMetadata(projectID int, samplesMetadata SamplesM
 	}
 
 	var res validateCSVRes
-	err := c.request("POST", "metadata/validate_csv_for_new_samples.json", "", req, &res)
+	err := c.request("POST", "/metadata/validate_csv_for_new_samples.json", "", req, &res)
 	if err != nil {
 		return err
 	}

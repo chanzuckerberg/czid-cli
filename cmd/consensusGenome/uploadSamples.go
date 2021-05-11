@@ -39,8 +39,8 @@ var uploadSamplesCmd = &cobra.Command{
 			projectName,
 			metadataCSVPath,
 			"consensus-genome",
-			technologies[technology],
-			wetlabProtocols[wetlabProtocol],
+			Technologies[technology],
+			WetlabProtocols[wetlabProtocol],
 		)
 	},
 }
