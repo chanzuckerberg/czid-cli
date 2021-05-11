@@ -21,6 +21,7 @@ func getInput(cmd *cobra.Command, reader *bufio.Reader, message string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
+	io.WriteString(cmd.OutOrStdout(), "\n")
 	return strings.TrimSuffix(input, "\n")
 }
 
@@ -40,6 +41,23 @@ func optionsSelect(cmd *cobra.Command, reader *bufio.Reader, message string, opt
 	return ""
 }
 
+func idseqExec(cmd *cobra.Command, reason string, args ...string) {
+	prettyArgs := make([]string, len(args))
+	for i, s := range args {
+		if strings.ContainsRune(s, ' ') {
+			prettyArgs[i] = fmt.Sprintf("\"%s\"", s)
+		} else {
+			prettyArgs[i] = s
+		}
+	}
+	msg := fmt.Sprintf("%s, running `idseq %s`\n", reason, strings.Join(prettyArgs, " "))
+	io.WriteString(cmd.OutOrStdout(), msg)
+	RootCmd.SetArgs(args)
+	if err := RootCmd.Execute(); err != nil {
+		log.Fatal(err)
+	}
+}
+
 // versionCmd represents the guided-upload command
 var guidedUploadCmd = &cobra.Command{
 	Use:   "guided-upload",
@@ -47,21 +65,11 @@ var guidedUploadCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := auth0.DefaultClient.IDToken()
 		if err != nil {
-			io.WriteString(cmd.OutOrStdout(), "You are not currently logged in, running `idseq login`\n")
-			RootCmd.SetArgs([]string{"login"})
-			err = RootCmd.Execute()
-			if err != nil {
-				log.Fatal(err)
-			}
+			idseqExec(cmd, "You are not currently logged in", "login")
 		}
 
 		if strings.ToLower(viper.GetString("accepted_user_agreement")) != "y" {
-			io.WriteString(cmd.OutOrStdout(), "You have not accepted the user agreement, running `idseq accept-user-agreement`\n")
-			RootCmd.SetArgs([]string{"accept-user-agreement"})
-			err = RootCmd.Execute()
-			if err != nil {
-				log.Fatal(err)
-			}
+			idseqExec(cmd, "You have not yet accepted the user agreement", "accept-user-agreement")
 		}
 
 		reader := bufio.NewReader(cmd.InOrStdin())
@@ -81,6 +89,8 @@ var guidedUploadCmd = &cobra.Command{
 			[]string{"single", "many"},
 		)
 
+		var sampleName string
+		var dirname string
 		if quantity == "single" {
 			fOne := getInput(cmd, reader, "Enter R1 fielpath for a paired-end sample or filepath to single file for a single-end sample:")
 			uploadArgs = append(uploadArgs, "upload-sample", fOne)
@@ -90,14 +100,14 @@ var guidedUploadCmd = &cobra.Command{
 				uploadArgs = append(uploadArgs, fTwo)
 			}
 
-			sampleName := getInput(
+			sampleName = getInput(
 				cmd,
 				reader,
 				"Enter a name for your sample:",
 			)
 			uploadArgs = append(uploadArgs, "--sample-name", sampleName)
 		} else {
-			dirname := getInput(cmd, reader, "Enter path to directory containing samples:")
+			dirname = getInput(cmd, reader, "Enter path to directory containing samples:")
 			uploadArgs = append(uploadArgs, "upload-samples", dirname)
 		}
 
@@ -128,19 +138,55 @@ var guidedUploadCmd = &cobra.Command{
 			}
 		}
 
-		metadataFile := getInput(
+		metadataMsg := `To continue you will need a metadata csv file
+Here are instructions on how to make one: https://idseq.net/metadata/instructions
+Here is a dictionary of our supported metadata: https://idseq.net/metadata/dictionary
+Would you like to create one yourself or generate a template?`
+		generate := optionsSelect(
 			cmd,
 			reader,
-			"Enter metadata file path:",
+			metadataMsg,
+			[]string{"self-create", "generate"},
 		)
 
-		uploadArgs = append(uploadArgs, "--metadata-csv", metadataFile)
-		io.WriteString(cmd.OutOrStdout(), fmt.Sprintf("Performing your upload, running `idseq %s`\n", strings.Join(" ", uploadArgs)))
-		RootCmd.SetArgs(uploadArgs)
-		err = RootCmd.Execute()
-		if err != nil {
-			log.Fatal(err)
+		var metadataFile string
+		if generate == "self-create" {
+			metadataFile = getInput(
+				cmd,
+				reader,
+				"Enter path to your metadata csv:",
+			)
+		} else {
+			metadataFile = getInput(
+				cmd,
+				reader,
+				"Enter path you would like for your newly generated metadata csv:",
+			)
+			hostGenome := getInput(
+				cmd,
+				reader,
+				"If your sample or samples are all from the same Host Organism please enter it below, otherwise press enter:",
+			)
+			templateArgs := []string{"-o", metadataFile}
+			if hostGenome != "" {
+				templateArgs = append(templateArgs, "-m", fmt.Sprintf("Host Organism=%s", hostGenome))
+			}
+			if quantity == "single" {
+				templateArgs = append([]string{"generate-metadata-template", "for-sample-name", sampleName}, templateArgs...)
+			} else {
+				templateArgs = append([]string{"generate-metadata-template", "for-sample-directory", dirname}, templateArgs...)
+			}
+			idseqExec(cmd, "Generating metadata template", templateArgs...)
+
+			getInput(
+				cmd,
+				reader,
+				fmt.Sprintf("Please fill in your template file at '%s', save, and press enter", metadataFile),
+			)
 		}
+
+		uploadArgs = append(uploadArgs, "--metadata-csv", metadataFile)
+		idseqExec(cmd, "Performing your upload", uploadArgs...)
 	},
 }
 
