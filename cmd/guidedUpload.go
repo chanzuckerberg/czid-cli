@@ -16,18 +16,30 @@ import (
 )
 
 func getInput(cmd *cobra.Command, reader *bufio.Reader, message string) string {
-	io.WriteString(cmd.OutOrStdout(), message+"\n")
+	_, err := io.WriteString(cmd.OutOrStdout(), message+"\n")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	input, err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatal(err)
 	}
-	io.WriteString(cmd.OutOrStdout(), "\n")
+
+	_, err = io.WriteString(cmd.OutOrStdout(), "\n")
+	if err != nil {
+		log.Fatal(err)
+	}
 	return strings.TrimSuffix(input, "\n")
 }
 
 func optionsSelect(cmd *cobra.Command, reader *bufio.Reader, message string, options []string) string {
 	optionsString := strings.Join(options, ", ")
-	io.WriteString(cmd.OutOrStdout(), message+"\n")
+	_, err := io.WriteString(cmd.OutOrStdout(), message+"\n")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	opt := fmt.Sprintf("Enter one of (%s):", optionsString)
 	input := getInput(cmd, reader, opt)
 
@@ -51,7 +63,11 @@ func idseqExec(cmd *cobra.Command, reason string, args ...string) {
 		}
 	}
 	msg := fmt.Sprintf("%s, running `idseq %s`\n", reason, strings.Join(prettyArgs, " "))
-	io.WriteString(cmd.OutOrStdout(), msg)
+	_, err := io.WriteString(cmd.OutOrStdout(), msg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	RootCmd.SetArgs(args)
 	if err := RootCmd.Execute(); err != nil {
 		log.Fatal(err)
