@@ -7,7 +7,7 @@ import (
 func TestGetUploadCredentials(t *testing.T) {
 	response := []byte(`{
       "access_key_id": "access_key_id_123",
-      "expiration": 1621708374,
+      "expiration": "2021-06-01T00:00:00Z",
       "secret_access_key": "secret_access_key_123",
       "session_token": "session_token_123"
     }`)
