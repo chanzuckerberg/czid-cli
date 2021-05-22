@@ -42,7 +42,8 @@ $ yourprogram completion fish | source
 $ yourprogram completion fish > ~/.config/fish/completions/yourprogram.fish
 `,
 	DisableFlagsInUseLine: true,
-	Args:                  cobra.ExactArgs(2),
+	ValidArgs:             []string{"bash", "zsh", "fish", "powershell"},
+	Args:                  cobra.ExactValidArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		switch args[0] {
 		case "bash":
@@ -50,7 +51,7 @@ $ yourprogram completion fish > ~/.config/fish/completions/yourprogram.fish
 		case "zsh":
 			return cmd.Root().GenZshCompletion(os.Stdout)
 		case "fish":
-			return cmd.Root().GenFishCompletionFile(args[1], false)
+			return cmd.Root().GenFishCompletion(os.Stdout, true)
 		case "powershell":
 			return cmd.Root().GenPowerShellCompletion(os.Stdout)
 		default:
