@@ -1,9 +1,8 @@
 package idseq
 
 import (
-	"encoding/json"
-	"net/url"
     "fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 )
@@ -17,21 +16,20 @@ type getUploadCredentialsRes struct {
 	SessionToken    string    `json:"session_token"`
 }
 
-func (c *Client) GetUploadCredentials(sampleID int) (credentialsRes, error) {
+func (c *Client) GetUploadCredentials(sampleID int) (aws.Credentials, error) {
 	var res getUploadCredentialsRes
 	err := c.request(
 		"GET",
-		fmt.Sprintf("/samples/%d/upload_credentials",
+		fmt.Sprintf("/samples/%d/upload_credentials", sampleID),
 		"",
 		getUploadCredentialsReq{},
 		&res,
 	)
 
-	credentials := aws.Credentials{
-		AccessKeyID:     res.Credentials.AccessKeyID,
-		Expires:         res.Credentials.Expiration,
-		SecretAccessKey: res.Credentials.SecretAccessKey,
-		SessionToken:    res.Credentials.SessionToken,
-	}
-	return metadataFields, err
+    return aws.Credentials{
+		AccessKeyID:     res.AccessKeyID,
+		Expires:         res.Expiration,
+		SecretAccessKey: res.SecretAccessKey,
+		SessionToken:    res.SessionToken,
+	}, err
 }

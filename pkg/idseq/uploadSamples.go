@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg"
 )
