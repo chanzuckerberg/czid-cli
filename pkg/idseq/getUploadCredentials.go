@@ -10,10 +10,12 @@ import (
 type getUploadCredentialsReq struct {}
 
 type getUploadCredentialsRes struct {
+  Credentials struct {
 	AccessKeyID     string    `json:"access_key_id"`
 	Expiration      time.Time `json:"expiration"`
 	SecretAccessKey string    `json:"secret_access_key"`
 	SessionToken    string    `json:"session_token"`
+  }
 }
 
 func (c *Client) GetUploadCredentials(sampleID int) (aws.Credentials, error) {
@@ -27,9 +29,9 @@ func (c *Client) GetUploadCredentials(sampleID int) (aws.Credentials, error) {
 	)
 
     return aws.Credentials{
-		AccessKeyID:     res.AccessKeyID,
-		Expires:         res.Expiration,
-		SecretAccessKey: res.SecretAccessKey,
-		SessionToken:    res.SessionToken,
+		AccessKeyID:     res.Credentials.AccessKeyID,
+		Expires:         res.Credentials.Expiration,
+		SecretAccessKey: res.Credentials.SecretAccessKey,
+		SessionToken:    res.Credentials.SessionToken,
 	}, err
 }
