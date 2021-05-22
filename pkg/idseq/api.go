@@ -60,11 +60,11 @@ func (c *Client) authorizedRequest(req *http.Request) (*http.Response, error) {
 
 	// TODO: don't exit, return an error type
 	if res.StatusCode == 401 || res.StatusCode == 403 {
-		fmt.Print("not authenticated with idseq try running `idseq login`")
+		fmt.Println("not authenticated with idseq try running `idseq login`")
 		os.Exit(1)
 	}
 	if res.StatusCode == 426 {
-		fmt.Print("idseq-cli version out of date, please install the latest version here: `https://github.com/chanzuckerberg/idseq-cli-v2`")
+		fmt.Println("idseq-cli version out of date, please install the latest version here: `https://github.com/chanzuckerberg/idseq-cli-v2`")
 		os.Exit(1)
 	}
 	if res.StatusCode >= 400 {
