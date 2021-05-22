@@ -5,12 +5,12 @@ import (
 )
 
 func TestGetUploadCredentials(t *testing.T) {
-	response := []byte(`[{
+	response := []byte(`{
       "access_key_id": "access_key_id_123",
       "expiration": 123,
       "secret_access_key": "secret_access_key_123",
       "session_token": "session_token_123"
-    }]`)
+    }`)
 	httpClient := newMockHTTPClient(response)
 	apiClient := Client{
 		auth0:      &mockAuth0Client{},
