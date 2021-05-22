@@ -57,7 +57,7 @@ func UploadSamplesFlow(
 		log.Fatal(err)
 	}
 
-	credentials, samples, err := DefaultClient.CreateSamples(
+	samples, err := DefaultClient.CreateSamples(
 		projectID,
 		sampleFiles,
 		samplesMetadata,
@@ -69,8 +69,9 @@ func UploadSamplesFlow(
 		log.Fatal(err)
 	}
 
-	u := upload.NewUploader(credentials)
 	for _, sample := range samples {
+        credentials = DefaultClient.GetUploadCredentials(sample.ID)
+	    u := upload.NewUploader(credentials)
 		sF := sampleFiles[sample.Name]
 		for _, inputFile := range sample.InputFiles {
 			filename := ""

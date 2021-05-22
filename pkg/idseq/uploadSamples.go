@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg"
 )
 
@@ -36,12 +34,6 @@ type samplesReq struct {
 	Samples  []createSamplesReqSample `json:"samples"`
 }
 
-type createSamplesResCredentials struct {
-	AccessKeyID     string    `json:"access_key_id"`
-	Expiration      time.Time `json:"expiration"`
-	SecretAccessKey string    `json:"secret_access_key"`
-	SessionToken    string    `json:"session_token"`
-}
 
 type createSamplesResSample struct {
 	Name       string       `json:"name"`
@@ -50,7 +42,6 @@ type createSamplesResSample struct {
 }
 
 type createSamplesRes struct {
-	Credentials createSamplesResCredentials `json:"credentials"`
 	Samples     []createSamplesResSample    `json:"samples"`
 	Errors      []string                    `json:"errors"`
 }
@@ -69,7 +60,7 @@ func (c *Client) CreateSamples(
 	workflow string,
 	technology string,
 	wetlabProtocol string,
-) (aws.Credentials, []createSamplesResSample, error) {
+) ([]createSamplesResSample, error) {
 	req := samplesReq{
 		Metadata: samplesMetadata,
 		Client:   pkg.VersionNumber(),
@@ -116,11 +107,5 @@ func (c *Client) CreateSamples(
 		os.Exit(1)
 	}
 
-	credentials := aws.Credentials{
-		AccessKeyID:     res.Credentials.AccessKeyID,
-		Expires:         res.Credentials.Expiration,
-		SecretAccessKey: res.Credentials.SecretAccessKey,
-		SessionToken:    res.Credentials.SessionToken,
-	}
-	return credentials, res.Samples, err
+	return res.Samples, err
 }
