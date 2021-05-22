@@ -70,7 +70,7 @@ func UploadSamplesFlow(
 	}
 
 	for _, sample := range samples {
-        credentials = DefaultClient.GetUploadCredentials(sample.ID)
+      credentials = DefaultClient.GetUploadCredentials(sample.ID)
 	    u := upload.NewUploader(credentials)
 		sF := sampleFiles[sample.Name]
 		for _, inputFile := range sample.InputFiles {
