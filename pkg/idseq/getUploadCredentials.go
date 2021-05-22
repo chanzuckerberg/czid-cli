@@ -27,9 +27,9 @@ func (c *Client) GetUploadCredentials(sampleID int) (aws.Credentials, error) {
 	)
 
     return aws.Credentials{
-		AccessKeyID:     res.Credentials.AccessKeyID,
-		Expires:         res.Credentials.Expiration,
-		SecretAccessKey: res.Credentials.SecretAccessKey,
-		SessionToken:    res.Credentials.SessionToken,
+		AccessKeyID:     res.AccessKeyID,
+		Expires:         res.Expiration,
+		SecretAccessKey: res.SecretAccessKey,
+		SessionToken:    res.SessionToken,
 	}, err
 }
