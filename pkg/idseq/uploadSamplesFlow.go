@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+
 	"github.com/chanzuckerberg/idseq-cli-v2/pkg/upload"
 )
 
@@ -57,7 +59,7 @@ func UploadSamplesFlow(
 		log.Fatal(err)
 	}
 
-	credentials, samples, err := DefaultClient.CreateSamples(
+	samples, err := DefaultClient.CreateSamples(
 		projectID,
 		sampleFiles,
 		samplesMetadata,
@@ -69,8 +71,13 @@ func UploadSamplesFlow(
 		log.Fatal(err)
 	}
 
-	u := upload.NewUploader(credentials)
+    var credentials aws.Credentials
 	for _, sample := range samples {
+        credentials, err = DefaultClient.GetUploadCredentials(sample.ID)
+        if err != nil {
+          log.Fatal(err)
+        }
+	    u := upload.NewUploader(credentials)
 		sF := sampleFiles[sample.Name]
 		for _, inputFile := range sample.InputFiles {
 			filename := ""
