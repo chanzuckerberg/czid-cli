@@ -47,6 +47,24 @@ func UploadSamplesFlow(
 	for sampleName, m := range samplesMetadata {
 		samplesMetadata[sampleName] = m.Fuse(metadata)
 	}
+
+	sampleNames := make([]string, 0, len(sampleFiles))
+	for sampleName := range samplesMetadata {
+		sampleNames = append(sampleNames, sampleName)
+	}
+	newSampleNames, err := DefaultClient.ValidateSampleNames(sampleNames, projectID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(sampleNames) != len(newSampleNames) {
+		log.Fatal("error validating sample names")
+	}
+	for i := range sampleNames {
+		v := samplesMetadata[sampleNames[i]]
+		delete(samplesMetadata, sampleNames[i])
+		samplesMetadata[newSampleNames[i]] = v
+	}
+
 	err = GeoSearchSuggestions(&samplesMetadata)
 	if err != nil {
 		log.Fatal(err)
@@ -71,13 +89,13 @@ func UploadSamplesFlow(
 		log.Fatal(err)
 	}
 
-    var credentials aws.Credentials
+	var credentials aws.Credentials
 	for _, sample := range samples {
-        credentials, err = DefaultClient.GetUploadCredentials(sample.ID)
-        if err != nil {
-          log.Fatal(err)
-        }
-	    u := upload.NewUploader(credentials)
+		credentials, err = DefaultClient.GetUploadCredentials(sample.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
+		u := upload.NewUploader(credentials)
 		sF := sampleFiles[sample.Name]
 		for _, inputFile := range sample.InputFiles {
 			filename := ""
