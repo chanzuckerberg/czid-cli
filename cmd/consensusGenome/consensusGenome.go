@@ -31,6 +31,7 @@ var WetlabProtocols = map[string]string{
 	"Combined MSSPE & ARTIC v3":           "combined_msspe_artic",
 	"MSSPE":                               "msspe",
 	"SNAP":                                "snap",
+	"COVIDseq":                            "covidseq",
 }
 var wetlabProtocolOptionsString string
 
