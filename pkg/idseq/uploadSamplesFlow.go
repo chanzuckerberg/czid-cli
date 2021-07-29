@@ -60,10 +60,12 @@ func UploadSamplesFlow(
 		log.Fatal("error validating sample names")
 	}
 	for i := range sampleNames {
-		samplesMetadata[newSampleNames[i]] = samplesMetadata[sampleNames[i]]
-		delete(samplesMetadata, sampleNames[i])
-		sampleFiles[newSampleNames[i]] = sampleFiles[sampleNames[i]]
-		delete(sampleFiles, sampleNames[i])
+		if newSampleNames[i] != sampleNames[i] {
+			samplesMetadata[newSampleNames[i]] = samplesMetadata[sampleNames[i]]
+			delete(samplesMetadata, sampleNames[i])
+			sampleFiles[newSampleNames[i]] = sampleFiles[sampleNames[i]]
+			delete(sampleFiles, sampleNames[i])
+		}
 	}
 
 	err = GeoSearchSuggestions(&samplesMetadata)
