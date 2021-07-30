@@ -84,12 +84,33 @@ func (u *Uploader) runProgressBar(fileSize int64) {
 }
 
 func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId *string) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+
+	stat, err := f.Stat()
+	if err != nil {
+		return err
+	}
+
 	parsedPath, err := url.Parse(s3path)
 	if err != nil {
 		return err
 	}
 
 	key := util.TrimLeadingSlash(parsedPath.Path)
+
+	input := s3.PutObjectInput{
+		Bucket: &parsedPath.Host,
+		Key:    &key,
+		Body:   f,
+	}
+
+	if stat.Size() == 5000000 {
+		_, err := u.client.PutObject(context.Background(), &input)
+		return err
+	}
 
 	_, err = u.client.HeadObject(context.Background(), &s3.HeadObjectInput{
 		Bucket: &parsedPath.Host,
@@ -113,23 +134,7 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 	u.c.parts = make(chan int64)
 	defer close(u.c.parts)
 
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-
-	stat, err := f.Stat()
-	if err != nil {
-		return err
-	}
-
 	go u.runProgressBar(stat.Size())
-
-	input := s3.PutObjectInput{
-		Bucket: &parsedPath.Host,
-		Key:    &key,
-		Body:   f,
-	}
 
 	if multipartUploadId != nil {
 		fmt.Printf("resuming upload of %s\n", filename)
@@ -144,7 +149,9 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 		}
 	} else {
 		fmt.Printf("starting upload of %s\n", filename)
-		_, err = u.u.Upload(context.Background(), &input)
+		_, err = u.u.Upload(context.Background(), &input, func(u *manager.Uploader) {
+			u.BufferProvider = manager.NewBufferedReadSeekerWriteToPool(65536) // minimum value
+		})
 	}
 	return err
 }
