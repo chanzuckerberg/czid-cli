@@ -25,6 +25,9 @@ type partChannelClient struct {
 
 func (c *partChannelClient) Do(r *http.Request) (*http.Response, error) {
 	resp, err := c.HTTPClient.Do(r)
+	if err != nil {
+		return resp, err
+	}
 	partNumber := r.URL.Query().Get("partNumber")
 	if resp.StatusCode < 400 && r.Method == "PUT" && partNumber != "" {
 		partNumber, _ := strconv.ParseInt(partNumber, 10, 64)
