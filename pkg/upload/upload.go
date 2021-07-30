@@ -18,6 +18,8 @@ import (
 	"github.com/cheggaaa/pb/v3"
 )
 
+const bufferSize = 1024 * 1024 * 2 // 2 MiB
+
 type partChannelClient struct {
 	aws.HTTPClient
 	parts chan int64
@@ -107,7 +109,8 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 		Body:   f,
 	}
 
-	if stat.Size() == 5000000 {
+	if stat.Size() <= 1024*1024*1024*5 {
+		input.Body = manager.NewBufferedReadSeeker(f, make([]byte, bufferSize))
 		_, err := u.client.PutObject(context.Background(), &input)
 		return err
 	}
@@ -150,7 +153,7 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 	} else {
 		fmt.Printf("starting upload of %s\n", filename)
 		_, err = u.u.Upload(context.Background(), &input, func(u *manager.Uploader) {
-			u.BufferProvider = manager.NewBufferedReadSeekerWriteToPool(65536) // minimum value
+			u.BufferProvider = manager.NewBufferedReadSeekerWriteToPool(bufferSize)
 		})
 	}
 	return err
