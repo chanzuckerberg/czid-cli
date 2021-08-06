@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"runtime"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -18,7 +19,9 @@ import (
 	"github.com/cheggaaa/pb/v3"
 )
 
-const bufferSize = 1024 * 1024 * 2 // 2 MiB
+// from s3 manager
+const MinUploadPartSize int64 = 1024 * 1024 * 5
+const DefaultUploadPartSize = MinUploadPartSize
 
 type partChannelClient struct {
 	aws.HTTPClient
@@ -109,8 +112,8 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 		Body:   f,
 	}
 
-	if stat.Size() <= 1024*1024*1024*5 {
-		input.Body = manager.NewBufferedReadSeeker(f, make([]byte, bufferSize))
+	if stat.Size() <= 1024*1024*5 {
+		input.Body = manager.NewBufferedReadSeeker(f, make([]byte, 1024*1024*2))
 		_, err := u.client.PutObject(context.Background(), &input)
 		return err
 	}
@@ -153,7 +156,8 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 	} else {
 		fmt.Printf("starting upload of %s\n", filename)
 		_, err = u.u.Upload(context.Background(), &input, func(u *manager.Uploader) {
-			u.BufferProvider = manager.NewBufferedReadSeekerWriteToPool(bufferSize)
+			u.Concurrency = runtime.NumCPU()
+			u.BufferProvider = manager.NewBufferedReadSeekerWriteToPool(int(DefaultUploadPartSize) * runtime.NumCPU())
 		})
 	}
 	return err
