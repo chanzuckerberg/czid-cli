@@ -113,7 +113,7 @@ func loadSharedFlags(c *cobra.Command) {
 	c.Flags().StringVar(&metadataCSVPath, "metadata-csv", "", "Metadata local file path.")
 	c.Flags().StringVar(&technology, "sequencing-platform", "", fmt.Sprintf("Sequencing platform used to sequence the sample, options: %s", technologyOptionsString))
 	c.Flags().StringVar(&wetlabProtocol, "wetlab-protocol", "", fmt.Sprintf(
-		"Wetlab protocol followed.\n  Options for Nanopore (optional, default: \"%s\"): %s\n  Options for Illumina (reqired): %s",
+		"Wetlab protocol followed.\n  Options for Nanopore (optional, default: \"%s\"): %s\n  Options for Illumina (required): %s",
 		nanoporeDefaultWetlabProtocol,
 		nanoporeWetlabProtocolOptionsString,
 		wetlabProtocolOptionsString,
