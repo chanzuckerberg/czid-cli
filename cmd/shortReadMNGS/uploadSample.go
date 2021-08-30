@@ -53,6 +53,8 @@ var uploadSampleCmd = &cobra.Command{
 			"short-read-mngs",
 			"",
 			"",
+			"",
+			false,
 		)
 	},
 }

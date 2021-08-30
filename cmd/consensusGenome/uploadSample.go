@@ -54,6 +54,8 @@ var uploadSampleCmd = &cobra.Command{
 			"consensus-genome",
 			Technologies[technology],
 			WetlabProtocols[wetlabProtocol],
+			MedakaModels[medakaModel],
+			clearLabs,
 		)
 	},
 }
