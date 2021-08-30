@@ -20,6 +20,8 @@ func UploadSamplesFlow(
 	workflow string,
 	technology string,
 	wetlabProtocol string,
+	medakaModel string,
+	clearLabs bool,
 ) error {
 	metadata := NewMetadata(stringMetadata)
 	projectID, err := DefaultClient.GetProjectID(projectName)
@@ -87,6 +89,8 @@ func UploadSamplesFlow(
 		workflow,
 		technology,
 		wetlabProtocol,
+		medakaModel,
+		clearLabs,
 	)
 	if err != nil {
 		log.Fatal(err)
