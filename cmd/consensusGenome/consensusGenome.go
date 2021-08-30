@@ -156,7 +156,7 @@ func validateCommonArgs() error {
 		medakaModel = defaultMedakaModel
 	}
 	if clearLabs && technology == "Illumina" {
-		return fmt.Errorf("clearlabs is only supported for Nanore")
+		return fmt.Errorf("clearlabs is only supported for Nanopore")
 	}
 	if clearLabs && technology == "Nanopore" {
 		if wetlabProtocol != nanoporeDefaultWetlabProtocol {
