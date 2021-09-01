@@ -25,8 +25,8 @@ type createSamplesReqSample struct {
 	Workflows           []string                    `json:"workflows"`
 	Technology          string                      `json:"technology"`
 	WetlabProtocol      string                      `json:"wetlab_protocol"`
-	MedakaModel         string                      `json:"medaka_model"`
-	ClearLabs           bool                        `json:"clearlabs"`
+	MedakaModel         *string                     `json:"medaka_model"`
+	ClearLabs           *bool                       `json:"clearlabs"`
 }
 
 type samplesReq struct {
@@ -84,8 +84,14 @@ func (c *Client) CreateSamples(
 			Workflows:           []string{workflow},
 			Technology:          technology,
 			WetlabProtocol:      wetlabProtocol,
-			MedakaModel:         medakaModel,
-			ClearLabs:           clearlabs,
+		}
+
+		if medakaModel != "" {
+			sample.MedakaModel = &medakaModel
+		}
+
+		if clearlabs {
+			sample.ClearLabs = &clearlabs
 		}
 
 		for i, filename := range filenames {
