@@ -25,8 +25,8 @@ type createSamplesReqSample struct {
 	Workflows           []string                    `json:"workflows"`
 	Technology          string                      `json:"technology"`
 	WetlabProtocol      string                      `json:"wetlab_protocol"`
-	MedakaModel         *string                     `json:"medaka_model"`
-	ClearLabs           *bool                       `json:"clearlabs"`
+	MedakaModel         *string                     `json:"medaka_model,omitempty"`
+	ClearLabs           *bool                       `json:"clearlabs,omitempty"`
 }
 
 type samplesReq struct {
