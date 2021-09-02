@@ -70,6 +70,7 @@ var MedakaModels = map[string]string{
 	"r941_prom_variant_g303":  "r941_prom_variant_g303",
 	"r941_prom_variant_g322":  "r941_prom_variant_g322",
 	"r941_prom_variant_g360":  "r941_prom_variant_g360",
+	"": "",
 }
 var medakaModelsString string
 var defaultMedakaModel = "r941_min_high_g360"
