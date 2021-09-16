@@ -61,6 +61,8 @@ func NewUploader(creds aws.Credentials) Uploader {
 	})
 	uploader := manager.NewUploader(client, func(u *manager.Uploader) {
 		u.LeavePartsOnError = true
+		u.Concurrency = runtime.NumCPU()
+		u.BufferProvider = manager.NewBufferedReadSeekerWriteToPool(int(DefaultUploadPartSize) * runtime.NumCPU())
 	})
 	return Uploader{u: uploader, c: &pC, client: client}
 }
@@ -93,6 +95,7 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	stat, err := f.Stat()
 	if err != nil {
@@ -155,10 +158,7 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 		}
 	} else {
 		fmt.Printf("starting upload of %s\n", filename)
-		_, err = u.u.Upload(context.Background(), &input, func(u *manager.Uploader) {
-			u.Concurrency = runtime.NumCPU()
-			u.BufferProvider = manager.NewBufferedReadSeekerWriteToPool(int(DefaultUploadPartSize) * runtime.NumCPU())
-		})
+		_, err = u.u.Upload(context.Background(), &input)
 	}
 	return err
 }
