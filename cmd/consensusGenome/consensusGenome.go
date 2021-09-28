@@ -130,7 +130,7 @@ func loadSharedFlags(c *cobra.Command) {
 		nanoporeDefaultWetlabProtocol,
 		defaultMedakaModel,
 	))
-        c.Flags().BoolVar(&disableBuffer, "disable-buffer", false, "Disable shared buffer pool (useful if running out of memory)")
+	c.Flags().BoolVar(&disableBuffer, "disable-buffer", false, "Disable shared buffer pool (useful if running out of memory)")
 }
 
 func validateCommonArgs() error {

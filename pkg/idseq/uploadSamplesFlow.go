@@ -22,7 +22,7 @@ func UploadSamplesFlow(
 	wetlabProtocol string,
 	medakaModel string,
 	clearLabs bool,
-        disableBuffer bool,
+	disableBuffer bool,
 ) error {
 	metadata := NewMetadata(stringMetadata)
 	projectID, err := DefaultClient.GetProjectID(projectName)
