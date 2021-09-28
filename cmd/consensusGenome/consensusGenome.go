@@ -19,6 +19,7 @@ var technology string
 var wetlabProtocol string
 var medakaModel string
 var clearLabs bool
+var disableBuffer bool
 
 var Technologies = map[string]string{
 	"Illumina": "Illumina",
@@ -129,6 +130,7 @@ func loadSharedFlags(c *cobra.Command) {
 		nanoporeDefaultWetlabProtocol,
 		defaultMedakaModel,
 	))
+        c.Flags().BoolVar(&disableBuffer, "disable-buffer", false, fmt.Sprintf("Disable shared buffer pool (useful if running out of memory)"))
 }
 
 func validateCommonArgs() error {

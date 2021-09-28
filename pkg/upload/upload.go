@@ -47,7 +47,7 @@ type Uploader struct {
 	client *s3.Client
 }
 
-func NewUploader(creds aws.Credentials) Uploader {
+func NewUploader(creds aws.Credentials, disableBuffer bool) Uploader {
 	provider := credentials.StaticCredentialsProvider{
 		Value: creds,
 	}
@@ -59,11 +59,19 @@ func NewUploader(creds aws.Credentials) Uploader {
 		o.Credentials = provider
 		o.Region = "us-west-2"
 	})
-	uploader := manager.NewUploader(client, func(u *manager.Uploader) {
-		u.LeavePartsOnError = true
-		u.Concurrency = runtime.NumCPU()
-		u.BufferProvider = manager.NewBufferedReadSeekerWriteToPool(int(DefaultUploadPartSize) * runtime.NumCPU())
-	})
+	var uploader *manager.Uploader
+        if disableBuffer { 
+       		uploader = manager.NewUploader(client, func(u *manager.Uploader) {
+                        u.LeavePartsOnError = true
+                        u.Concurrency = runtime.NumCPU()
+                }) 
+        } else { 
+		uploader = manager.NewUploader(client, func(u *manager.Uploader) {
+			u.LeavePartsOnError = true
+			u.Concurrency = runtime.NumCPU()
+			u.BufferProvider = manager.NewBufferedReadSeekerWriteToPool(int(DefaultUploadPartSize) * runtime.NumCPU())
+		})
+        }
 	return Uploader{u: uploader, c: &pC, client: client}
 }
 
