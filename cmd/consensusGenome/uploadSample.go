@@ -56,6 +56,7 @@ var uploadSampleCmd = &cobra.Command{
 			WetlabProtocols[wetlabProtocol],
 			MedakaModels[medakaModel],
 			clearLabs,
+			disableBuffer,
 		)
 	},
 }

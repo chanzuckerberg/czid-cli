@@ -22,6 +22,7 @@ func UploadSamplesFlow(
 	wetlabProtocol string,
 	medakaModel string,
 	clearLabs bool,
+	disableBuffer bool,
 ) error {
 	metadata := NewMetadata(stringMetadata)
 	projectID, err := DefaultClient.GetProjectID(projectName)
@@ -102,7 +103,7 @@ func UploadSamplesFlow(
 		if err != nil {
 			log.Fatal(err)
 		}
-		u := upload.NewUploader(credentials)
+		u := upload.NewUploader(credentials, disableBuffer)
 		sF := sampleFiles[sample.Name]
 		for _, inputFile := range sample.InputFiles {
 			filename := ""

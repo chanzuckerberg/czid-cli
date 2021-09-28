@@ -55,6 +55,7 @@ var uploadSampleCmd = &cobra.Command{
 			"",
 			"",
 			false,
+			disableBuffer,
 		)
 	},
 }
