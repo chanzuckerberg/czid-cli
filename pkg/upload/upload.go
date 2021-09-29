@@ -59,19 +59,13 @@ func NewUploader(creds aws.Credentials, disableBuffer bool) Uploader {
 		o.Credentials = provider
 		o.Region = "us-west-2"
 	})
-	var uploader *manager.Uploader
-        if disableBuffer { 
-       		uploader = manager.NewUploader(client, func(u *manager.Uploader) {
-                        u.LeavePartsOnError = true
-                        u.Concurrency = runtime.NumCPU()
-                }) 
-        } else { 
-		uploader = manager.NewUploader(client, func(u *manager.Uploader) {
-			u.LeavePartsOnError = true
-			u.Concurrency = runtime.NumCPU()
+	uploader := manager.NewUploader(client, func(u *manager.Uploader) {
+		u.LeavePartsOnError = true
+		u.Concurrency = runtime.NumCPU()
+		if !disableBuffer {
 			u.BufferProvider = manager.NewBufferedReadSeekerWriteToPool(int(DefaultUploadPartSize) * runtime.NumCPU())
-		})
-        }
+		}
+	})
 	return Uploader{u: uploader, c: &pC, client: client}
 }
 
