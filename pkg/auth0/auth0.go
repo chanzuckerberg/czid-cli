@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
+	"github.com/chanzuckerberg/czid-cli/pkg/util"
 	"github.com/spf13/viper"
 )
 

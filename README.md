@@ -1,6 +1,6 @@
 # CZ ID CLI
 
-This project is under active development and in its beta phase. It should be fairly stable but there may be some issues. If you experience an issue please [let us know](https://github.com/chanzuckerberg/idseq-cli-v2/issues).
+This project is under active development and in its beta phase. It should be fairly stable but there may be some issues. If you experience an issue please [let us know](https://github.com/chanzuckerberg/czid-cli/issues).
 
 A **C**ommand **L**ine **I**nterface for [CZ ID](https://czid.org/). 
 
@@ -18,18 +18,18 @@ There are lots of options to install on Linux.
 
 ##### Debian Distributions (ex. Debian, Ubuntu, Linux Mint)
 
-1. Download our [latest .deb package](https://github.com/chanzuckerberg/idseq-cli-v2/releases/latest/download/idseq-cli-v2_linux_amd64.deb).
-1. (Alternatively) Download with curl: `curl -L https://github.com/chanzuckerberg/idseq-cli-v2/releases/latest/download/idseq-cli-v2_linux_amd64.deb -o idseq-cli-v2_linux_amd64.deb`
-1. Install the package: `sudo dpkg -i idseq-cli-v2_linux_amd64.deb`
-1. (Optional) Remove the package file `rm idseq-cli-v2_linux_amd64.deb`
+1. Download our [latest .deb package](https://github.com/chanzuckerberg/czid-cli/releases/latest/download/czid-cli_linux_amd64.deb).
+1. (Alternatively) Download with curl: `curl -L https://github.com/chanzuckerberg/czid-cli/releases/latest/download/czid-cli_linux_amd64.deb -o czid-cli_linux_amd64.deb`
+1. Install the package: `sudo dpkg -i czid-cli_linux_amd64.deb`
+1. (Optional) Remove the package file `rm czid-cli_linux_amd64.deb`
 
 
 ##### Fedora Distributions (ex. Centos, RHEL)
 
-1. Download our [latest .rpm package](https://github.com/chanzuckerberg/idseq-cli-v2/releases/latest/download/idseq-cli-v2_linux_amd64.rpm)
-1. (Alternatively) Download with curl: `curl -L https://github.com/chanzuckerberg/idseq-cli-v2/releases/latest/download/idseq-cli-v2_linux_amd64.rpm -o idseq-cli-v2_linux_amd64.rpm`
-1. Install the package: `sudo rpm -i idseq-cli-v2_linux_amd64.rpm`
-1. (Optional) Remove the package file: `rm idseq-cli-v2_linux_amd64.rpm`
+1. Download our [latest .rpm package](https://github.com/chanzuckerberg/czid-cli/releases/latest/download/czid-cli_linux_amd64.rpm)
+1. (Alternatively) Download with curl: `curl -L https://github.com/chanzuckerberg/czid-cli/releases/latest/download/czid-cli_linux_amd64.rpm -o czid-cli_linux_amd64.rpm`
+1. Install the package: `sudo rpm -i czid-cli_linux_amd64.rpm`
+1. (Optional) Remove the package file: `rm czid-cli_linux_amd64.rpm`
 
 ##### Other Linux: Install via Homebrew for Linux
 
@@ -61,7 +61,7 @@ Follow the instructions for [installing from binaries](#from-binaries).
 
 #### From Binaries
 
-1. Navigate to our [latest release](https://github.com/chanzuckerberg/idseq-cli-v2/releases/latest).
+1. Navigate to our [latest release](https://github.com/chanzuckerberg/czid-cli/releases/latest).
 1. Available binaries will be under the `Assets` tab as archives (`.tar.gz` for Linux + MacOS, `.zip` for Windows)
 1. Download appropriate archive for your operating system and architecture
 1. Unzip the file, the `czid` executable will be inside
@@ -143,7 +143,7 @@ The CZ ID CLI can search a directory for read files and upload supported files a
 - `your_directory_of_samples/sample_one/sample_one_R2.fastq.gz` => `sample_one` (pair of the above example)
 - `your_directory_of_samples/some_directory/some_other_directory/sample_two_R1_001.fa.gz` => `sample_two`
 
-This is the first pass of directory uploads and we would like to support more directory structures. If you have any suggestions for directory structure uploads [we'd love to hear from you](https://github.com/chanzuckerberg/idseq-cli-v2/issues).
+This is the first pass of directory uploads and we would like to support more directory structures. If you have any suggestions for directory structure uploads [we'd love to hear from you](https://github.com/chanzuckerberg/czid-cli/issues).
 
 Optionally, you can create a metadata CSV file for your sample. You can skip this step and specify your metadata with command line flags. For instructions on creating this file see:
 

@@ -7,10 +7,10 @@ import (
 	"os"
 	"path"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/cmd/consensusGenome"
-	"github.com/chanzuckerberg/idseq-cli-v2/cmd/generateMetadataTemplate"
-	"github.com/chanzuckerberg/idseq-cli-v2/cmd/shortReadMNGS"
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
+	"github.com/chanzuckerberg/czid-cli/cmd/consensusGenome"
+	"github.com/chanzuckerberg/czid-cli/cmd/generateMetadataTemplate"
+	"github.com/chanzuckerberg/czid-cli/cmd/shortReadMNGS"
+	"github.com/chanzuckerberg/czid-cli/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/czid"
+	"github.com/chanzuckerberg/czid-cli/pkg/czid"
 	"github.com/spf13/cobra"
 )
 

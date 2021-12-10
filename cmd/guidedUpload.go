@@ -10,9 +10,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/cmd/consensusGenome"
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0"
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
+	"github.com/chanzuckerberg/czid-cli/cmd/consensusGenome"
+	"github.com/chanzuckerberg/czid-cli/pkg/auth0"
+	"github.com/chanzuckerberg/czid-cli/pkg/util"
 )
 
 func getInput(cmd *cobra.Command, reader *bufio.Reader, message string) string {

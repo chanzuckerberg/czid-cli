@@ -13,10 +13,10 @@ builds:
     - amd64
   ldflags: &ldflags
     - -s -w
-    - -X github.com/chanzuckerberg/idseq-cli-v2/pkg.Version={{.Version}}
-    - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultClientID={{.Env.AUTH_0_CLIENT_ID}}
-    - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultAuth0Host={{.Env.AUTH0_HOST}}
-    - -X github.com/chanzuckerberg/idseq-cli-v2/pkg/czid.defaultCZIDBaseURL={{.Env.CZID_BASE_URL}}
+    - -X github.com/chanzuckerberg/czid-cli/pkg.Version={{.Version}}
+    - -X github.com/chanzuckerberg/czid-cli/pkg/auth0.defaultClientID={{.Env.AUTH_0_CLIENT_ID}}
+    - -X github.com/chanzuckerberg/czid-cli/pkg/auth0.defaultAuth0Host={{.Env.AUTH0_HOST}}
+    - -X github.com/chanzuckerberg/czid-cli/pkg/czid.defaultCZIDBaseURL={{.Env.CZID_BASE_URL}}
   hooks:
     post: "scripts/generate_completions.sh {{.Path}}"
 - binary: czid
@@ -57,7 +57,7 @@ brews:
     owner: chanzuckerberg
     name: homebrew-tap
     token: "{{.Env.HOMEBREW_TAP_GITHUB_TOKEN}}"
-  homepage: "https://github.com/chanzuckerberg/idseq-cli-v2"
+  homepage: "https://github.com/chanzuckerberg/czid-cli"
   test: system "#{bin}/czid --version"
   install: |
     bin.install "czid"
@@ -68,7 +68,7 @@ nfpms:
   - 
     vendor: chanzuckerberg
     maintainer: Todd Morse <todd@morsecodist.io>
-    homepage: "https://github.com/chanzuckerberg/idseq"
+    homepage: "https://github.com/chanzuckerberg/czid-cli"
     description: "A CLI for uploading samples to Chan Zuckerberg ID"
     license: MIT
     # Default without version for easy latest release linking

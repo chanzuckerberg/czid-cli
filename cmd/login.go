@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0"
+	"github.com/chanzuckerberg/czid-cli/pkg/auth0"
 	"github.com/spf13/cobra"
 )
 

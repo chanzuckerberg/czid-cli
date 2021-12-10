@@ -6,7 +6,7 @@ test: ## run tests, will update go.mod
 .PHONY: test
 
 build: ## build the binary
-	go build -o czid -ldflags="-X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultClientID=${AUTH0_CLIENT_ID} -X github.com/chanzuckerberg/idseq-cli-v2/pkg/czid.defaultCZIDBaseURL=${CZID_BASE_URL} -X github.com/chanzuckerberg/idseq-cli-v2/pkg.Version=${VERSION} -X github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0.defaultAuth0Host=${AUTH0_HOST}" .
+	go build -o czid -ldflags="-X github.com/chanzuckerberg/czid-cli/pkg/auth0.defaultClientID=${AUTH0_CLIENT_ID} -X github.com/chanzuckerberg/czid-cli/pkg/czid.defaultCZIDBaseURL=${CZID_BASE_URL} -X github.com/chanzuckerberg/czid-cli/pkg.Version=${VERSION} -X github.com/chanzuckerberg/czid-cli/pkg/auth0.defaultAuth0Host=${AUTH0_HOST}" .
 .PHONY: build
 
 deps:
