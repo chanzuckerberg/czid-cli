@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq"
+	"github.com/chanzuckerberg/idseq-cli-v2/pkg/czid"
 	"github.com/spf13/cobra"
 )
 
@@ -29,11 +29,11 @@ var uploadSamplesCmd = &cobra.Command{
 			return fmt.Errorf("too many positional arguments, (maximum 1), args: %v", args)
 		}
 		directory := args[0]
-		sampleFiles, err := idseq.SamplesFromDir(directory, verbose)
+		sampleFiles, err := czid.SamplesFromDir(directory, verbose)
 		if err != nil {
 			log.Fatal(err)
 		}
-		return idseq.UploadSamplesFlow(
+		return czid.UploadSamplesFlow(
 			sampleFiles,
 			stringMetadata,
 			projectName,

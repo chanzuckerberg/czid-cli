@@ -8,14 +8,14 @@ import (
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Authenticate with IDSeq",
-	Long: `Log into IDSeq so you can upload samples.
+	Short: "Authenticate with CZID",
+	Long: `Log into Chan Zuckerberg ID so you can upload samples.
 This will either open a web page or provide you with
 a link to a web page if you use the --headless
 option. Once you log in on that web page on any
 device (not necessarily the one you ran the command on)
 you will be authorized to upload samples to your
-IDSeq account.
+CZID account.
 
 By default you will remain authenticated for a short
 time. If you would like to obtain a secret that
@@ -24,7 +24,7 @@ allows you to stay persistently authenticated use the
 secret will be added to your configuration file
 so please exercise caution when handling this
 file. If you suspect your secret has been
-comprimised, please reach out to IDSeq support
+comprimised, please reach out to CZID support
 at https://chanzuckerberg.zendesk.com/hc/en-us/requests/new.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		headless, err := cmd.Flags().GetBool("headless")

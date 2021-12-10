@@ -53,7 +53,7 @@ func optionsSelect(cmd *cobra.Command, reader *bufio.Reader, message string, opt
 	return ""
 }
 
-func idseqExec(cmd *cobra.Command, reason string, args ...string) {
+func czidExec(cmd *cobra.Command, reason string, args ...string) {
 	prettyArgs := make([]string, len(args))
 	for i, s := range args {
 		if strings.ContainsRune(s, ' ') {
@@ -62,7 +62,7 @@ func idseqExec(cmd *cobra.Command, reason string, args ...string) {
 			prettyArgs[i] = s
 		}
 	}
-	msg := fmt.Sprintf("%s, running `idseq %s`\n", reason, strings.Join(prettyArgs, " "))
+	msg := fmt.Sprintf("%s, running `czid %s`\n", reason, strings.Join(prettyArgs, " "))
 	_, err := io.WriteString(cmd.OutOrStdout(), msg)
 	if err != nil {
 		log.Fatal(err)
@@ -77,15 +77,15 @@ func idseqExec(cmd *cobra.Command, reason string, args ...string) {
 // versionCmd represents the guided-upload command
 var guidedUploadCmd = &cobra.Command{
 	Use:   "guided-upload",
-	Short: "guides you through an upload to IDSeq",
+	Short: "guides you through an upload to CZID",
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := auth0.DefaultClient.IDToken()
 		if err != nil {
-			idseqExec(cmd, "You are not currently logged in", "login")
+			czidExec(cmd, "You are not currently logged in", "login")
 		}
 
 		if strings.ToLower(viper.GetString("accepted_user_agreement")) != "y" {
-			idseqExec(cmd, "You have not yet accepted the user agreement", "accept-user-agreement")
+			czidExec(cmd, "You have not yet accepted the user agreement", "accept-user-agreement")
 		}
 
 		reader := bufio.NewReader(cmd.InOrStdin())
@@ -155,8 +155,8 @@ var guidedUploadCmd = &cobra.Command{
 		}
 
 		metadataMsg := `To continue you will need a metadata csv file
-Here are instructions on how to make one: https://idseq.net/metadata/instructions
-Here is a dictionary of our supported metadata: https://idseq.net/metadata/dictionary
+Here are instructions on how to make one: https://czid.org/metadata/instructions
+Here is a dictionary of our supported metadata: https://czid.org/metadata/dictionary
 Would you like to create one yourself or generate a template?`
 		generate := optionsSelect(
 			cmd,
@@ -192,7 +192,7 @@ Would you like to create one yourself or generate a template?`
 			} else {
 				templateArgs = append([]string{"generate-metadata-template", "for-sample-directory", dirname}, templateArgs...)
 			}
-			idseqExec(cmd, "Generating metadata template", templateArgs...)
+			czidExec(cmd, "Generating metadata template", templateArgs...)
 
 			getInput(
 				cmd,
@@ -202,7 +202,7 @@ Would you like to create one yourself or generate a template?`
 		}
 
 		uploadArgs = append(uploadArgs, "--metadata-csv", metadataFile)
-		idseqExec(cmd, "Performing your upload", uploadArgs...)
+		czidExec(cmd, "Performing your upload", uploadArgs...)
 	},
 }
 

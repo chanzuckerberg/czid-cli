@@ -21,7 +21,7 @@ var ShortReadMNGSCmd = &cobra.Command{
 	Long:  "Commands related to the short-read-mngs pipeline",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if strings.ToLower(viper.GetString("accepted_user_agreement")) != "y" {
-			fmt.Println("Cannot upload samples until the user agreement is accepted, run idseq accept-user-agreement or set IDSEQ_CLI_ACCEPTED_USER_AGREEMENT=Y")
+			fmt.Println("Cannot upload samples until the user agreement is accepted, run czid accept-user-agreement or set CZID_CLI_ACCEPTED_USER_AGREEMENT=Y")
 			os.Exit(2)
 		}
 	},

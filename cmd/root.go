@@ -19,8 +19,8 @@ var cfgFile string
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "idseq",
-	Short: "A CLI for uploading samples to IDseq",
+	Use:   "czid",
+	Short: "A CLI for uploading samples to Chan Zuckerberg ID",
 }
 
 func init() {
@@ -57,7 +57,7 @@ func initConfig() {
 		viper.SetConfigFile(path.Join(configDir, "config.yaml"))
 	}
 
-	viper.SetEnvPrefix("idseq_cli")
+	viper.SetEnvPrefix("czid_cli")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
