@@ -7,10 +7,10 @@ import (
 	"os"
 	"path"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/cmd/consensusGenome"
-	"github.com/chanzuckerberg/idseq-cli-v2/cmd/generateMetadataTemplate"
-	"github.com/chanzuckerberg/idseq-cli-v2/cmd/shortReadMNGS"
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
+	"github.com/chanzuckerberg/czid-cli/cmd/consensusGenome"
+	"github.com/chanzuckerberg/czid-cli/cmd/generateMetadataTemplate"
+	"github.com/chanzuckerberg/czid-cli/cmd/shortReadMNGS"
+	"github.com/chanzuckerberg/czid-cli/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -19,8 +19,8 @@ var cfgFile string
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "idseq",
-	Short: "A CLI for uploading samples to IDseq",
+	Use:   "czid",
+	Short: "A CLI for uploading samples to Chan Zuckerberg ID",
 }
 
 func init() {
@@ -57,7 +57,7 @@ func initConfig() {
 		viper.SetConfigFile(path.Join(configDir, "config.yaml"))
 	}
 
-	viper.SetEnvPrefix("idseq_cli")
+	viper.SetEnvPrefix("czid_cli")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.

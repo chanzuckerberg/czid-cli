@@ -3,7 +3,7 @@ dist
 .vscode
 coverage.txt
 bin
-idseq-cli-v2
-/idseq
+czid
+/czid
 .env
 test-files/

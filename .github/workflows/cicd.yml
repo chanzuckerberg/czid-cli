@@ -77,7 +77,7 @@ jobs:
         env:
           AUTH_0_CLIENT_ID: ${{ secrets.AUTH_0_CLIENT_ID }}
           AUTH0_HOST: ${{ secrets.AUTH0_HOST }}
-          IDSEQ_BASE_URL: ${{ secrets.IDSEQ_BASE_URL }}
+          CZID_BASE_URL: ${{ secrets.CZID_BASE_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   Release:
     name: Release
@@ -98,6 +98,6 @@ jobs:
         env:
           AUTH_0_CLIENT_ID: ${{ secrets.AUTH_0_CLIENT_ID }}
           AUTH0_HOST: ${{ secrets.AUTH0_HOST }}
-          IDSEQ_BASE_URL: ${{ secrets.IDSEQ_BASE_URL }}
+          CZID_BASE_URL: ${{ secrets.CZID_BASE_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}

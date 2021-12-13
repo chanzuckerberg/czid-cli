@@ -4,7 +4,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq"
+	"github.com/chanzuckerberg/czid-cli/pkg/czid"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,7 @@ var forSampleDirectoryCmd = &cobra.Command{
 		}
 		directory := args[0]
 
-		sampleFiles, err := idseq.SamplesFromDir(directory, verbose)
+		sampleFiles, err := czid.SamplesFromDir(directory, verbose)
 		if err != nil {
 			log.Fatal(err)
 		}
