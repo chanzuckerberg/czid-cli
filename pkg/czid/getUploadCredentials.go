@@ -1,13 +1,13 @@
-package idseq
+package czid
 
 import (
-    "fmt"
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 )
 
-type getUploadCredentialsReq struct {}
+type getUploadCredentialsReq struct{}
 
 type getUploadCredentialsRes struct {
 	AccessKeyID     string    `json:"access_key_id"`
@@ -26,7 +26,7 @@ func (c *Client) GetUploadCredentials(sampleID int) (aws.Credentials, error) {
 		&res,
 	)
 
-    return aws.Credentials{
+	return aws.Credentials{
 		AccessKeyID:     res.AccessKeyID,
 		Expires:         res.Expiration,
 		SecretAccessKey: res.SecretAccessKey,

@@ -1,11 +1,11 @@
-package idseq
+package czid
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg"
+	"github.com/chanzuckerberg/czid-cli/pkg"
 )
 
 type createSamplesReqInputFile struct {

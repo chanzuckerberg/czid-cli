@@ -1,4 +1,4 @@
-package idseq
+package czid
 
 import "fmt"
 

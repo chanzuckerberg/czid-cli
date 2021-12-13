@@ -1,6 +1,6 @@
-package idseq
+package czid
 
-// This file is for interracting with the idseq API
+// This file is for interracting with the czid API
 
 import (
 	"bytes"
@@ -14,10 +14,10 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/auth0"
+	"github.com/chanzuckerberg/czid-cli/pkg/auth0"
 )
 
-var defaultIDSeqBaseURL = ""
+var defaultCZIDBaseURL = ""
 
 // HTTPClient interface
 type HTTPClient interface {
@@ -40,9 +40,9 @@ func (c *Client) authorizedRequest(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	baseURLString := defaultIDSeqBaseURL
-	if viper.IsSet("idseq_base_url") {
-		baseURLString = viper.GetString("idseq_base_url")
+	baseURLString := defaultCZIDBaseURL
+	if viper.IsSet("czid_base_url") {
+		baseURLString = viper.GetString("czid_base_url")
 	}
 	baseURL, err := url.Parse(baseURLString)
 	if err != nil {
@@ -60,15 +60,15 @@ func (c *Client) authorizedRequest(req *http.Request) (*http.Response, error) {
 
 	// TODO: don't exit, return an error type
 	if res.StatusCode == 401 || res.StatusCode == 403 {
-		fmt.Println("not authenticated with idseq try running `idseq login`")
+		fmt.Println("not authenticated with czid try running `czid login`")
 		os.Exit(1)
 	}
 	if res.StatusCode == 426 {
-		fmt.Println("idseq-cli version out of date, please install the latest version here: `https://github.com/chanzuckerberg/idseq-cli-v2`")
+		fmt.Println("czid-cli version out of date, please install the latest version here: `https://github.com/chanzuckerberg/czid-cli`")
 		os.Exit(1)
 	}
 	if res.StatusCode >= 400 {
-		return res, fmt.Errorf("idseq API responded with error code %d", res.StatusCode)
+		return res, fmt.Errorf("czid API responded with error code %d", res.StatusCode)
 	}
 
 	return res, nil

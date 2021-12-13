@@ -1,4 +1,4 @@
-package idseq
+package czid
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/upload"
+	"github.com/chanzuckerberg/czid-cli/pkg/upload"
 )
 
 func UploadSamplesFlow(
