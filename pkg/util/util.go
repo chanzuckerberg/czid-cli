@@ -15,7 +15,7 @@ const AppName = "czid-cli"
 // MkdirIfNotExists makes a directory if it doesn't exist
 func MkdirIfNotExists(dirname string) error {
 	if _, err := os.Stat(dirname); os.IsNotExist(err) {
-		err := os.Mkdir(dirname, os.ModePerm)
+		err := os.MkdirAll(dirname, os.ModePerm)
 		if err != nil {
 			return err
 		}
