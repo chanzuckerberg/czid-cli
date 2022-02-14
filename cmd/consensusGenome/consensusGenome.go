@@ -28,7 +28,7 @@ var Technologies = map[string]string{
 var technologyOptionsString string
 
 var WetlabProtocols = map[string]string{
-	"ARTIC v4":                            "artic_v4",
+	"ARTIC v4/ARTIC v4.1":                            "artic_v4",
 	"ARTIC v3 - Short Amplicons (275 bp)": "artic_short_amplicons",
 	"ARTIC v3":                            "artic",
 	"AmpliSeq":                            "ampliseq",
@@ -42,7 +42,7 @@ var WetlabProtocols = map[string]string{
 var wetlabProtocolOptionsString string
 
 var nanoporeWetLabProtocols = map[string]string{
-	"ARTIC v4": "artic_v4",
+	"ARTIC v4/ARTIC v4.1": "artic_v4",
 	"Midnight": "midnight",
 	"ARTIC v3": "artic",
 	"Varskip": "varskip",
