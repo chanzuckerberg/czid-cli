@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
+	"github.com/chanzuckerberg/czid-cli/pkg/util"
 )
 
 var projectName string
@@ -83,7 +83,7 @@ var ConsensusGenomeCmd = &cobra.Command{
 	Long:  "Commands related to the consensus-genome pipeline",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if strings.ToLower(viper.GetString("accepted_user_agreement")) != "y" {
-			fmt.Println("Cannot upload samples until the user agreement is accepted, run idseq accept-user-agreement or set IDSEQ_CLI_ACCEPTED_USER_AGREEMENT=Y")
+			fmt.Println("Cannot upload samples until the user agreement is accepted, run czid accept-user-agreement or set CZID_CLI_ACCEPTED_USER_AGREEMENT=Y")
 			os.Exit(2)
 		}
 	},

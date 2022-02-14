@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/cmd"
+	"github.com/chanzuckerberg/czid-cli/cmd"
 )
 
 func main() {
