@@ -37,6 +37,7 @@ var WetlabProtocols = map[string]string{
 	"SNAP":                                "snap",
 	"COVIDseq":                            "covidseq",
 	"Midnight":                            "midnight",
+	"Varskip":                             "varskip",
 }
 var wetlabProtocolOptionsString string
 
@@ -44,6 +45,7 @@ var nanoporeWetLabProtocols = map[string]string{
 	"ARTIC v4/ARTIC v4.1": "artic_v4",
 	"Midnight": "midnight",
 	"ARTIC v3": "artic",
+	"Varskip": "varskip",
 }
 var nanoporeWetlabProtocolOptionsString string
 var nanoporeDefaultWetlabProtocol = "ARTIC v3"
