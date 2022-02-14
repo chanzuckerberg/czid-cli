@@ -1,4 +1,4 @@
-module github.com/chanzuckerberg/idseq-cli-v2
+module github.com/chanzuckerberg/czid-cli
 
 go 1.16
 

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq"
+	"github.com/chanzuckerberg/czid-cli/pkg/czid"
 	"github.com/spf13/cobra"
 )
 
@@ -28,16 +28,16 @@ var uploadSampleCmd = &cobra.Command{
 		r2path := ""
 
 		if sampleName == "" {
-			sampleName = idseq.ToSampleName(r1path)
+			sampleName = czid.ToSampleName(r1path)
 		}
 
-		sampleFiles := map[string]idseq.SampleFiles{
+		sampleFiles := map[string]czid.SampleFiles{
 			sampleName: {Single: r1path},
 		}
 
 		if len(args) > 1 {
 			r2path = args[1]
-			sampleFiles[sampleName] = idseq.SampleFiles{R1: r1path, R2: r2path}
+			sampleFiles[sampleName] = czid.SampleFiles{R1: r1path, R2: r2path}
 		}
 		if len(args) > 2 {
 			return fmt.Errorf("too many positional arguments (maximum 2), args: %v", args)
@@ -46,7 +46,7 @@ var uploadSampleCmd = &cobra.Command{
 			return errors.New("r1 and r2 cannot be the same file")
 		}
 
-		return idseq.UploadSamplesFlow(
+		return czid.UploadSamplesFlow(
 			sampleFiles,
 			stringMetadata,
 			projectName,

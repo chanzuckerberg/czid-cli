@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/util"
+	"github.com/chanzuckerberg/czid-cli/pkg/util"
 	"github.com/spf13/viper"
 )
 
@@ -280,7 +280,7 @@ func (c *Client) IDToken() (string, error) {
 		}
 		return t.IdToken, err
 	}
-	return "", fmt.Errorf("not authenticated, try running `idseq login` or adding your `secret` to %s manually", viper.GetViper().ConfigFileUsed())
+	return "", fmt.Errorf("not authenticated, try running `czid login` or adding your `secret` to %s manually", viper.GetViper().ConfigFileUsed())
 }
 
 // Login performs the auth0 device authorization flow:

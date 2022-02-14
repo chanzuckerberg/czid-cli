@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg"
+	"github.com/chanzuckerberg/czid-cli/pkg"
 	"github.com/spf13/cobra"
 )
 

@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/chanzuckerberg/idseq-cli-v2/pkg/idseq"
+	"github.com/chanzuckerberg/czid-cli/pkg/czid"
 	"github.com/spf13/cobra"
 )
 
@@ -27,8 +27,8 @@ func generateMetadataTemplate(cmd *cobra.Command, output string, sampleNames []s
 		writer = csv.NewWriter(cmd.OutOrStdout())
 	}
 
-	metadata := idseq.NewMetadata(stringMetadata)
-	templateCSV, err := idseq.DefaultClient.GetTemplateCSV(sampleNames, metadata.HostGenome)
+	metadata := czid.NewMetadata(stringMetadata)
+	templateCSV, err := czid.DefaultClient.GetTemplateCSV(sampleNames, metadata.HostGenome)
 	templateCSV.LazyQuotes = true
 	if err != nil {
 		log.Fatal(err)
