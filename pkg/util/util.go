@@ -6,7 +6,6 @@ import (
 	"path"
 	"runtime"
 	"sync"
-
 	"github.com/spf13/viper"
 )
 
@@ -27,19 +26,19 @@ func MkdirIfNotExists(dirname string) error {
 
 // GetConfigDir gets the config directory for this application
 func GetConfigDir() (string, error) {
-	userCacheDir, err := os.UserConfigDir()
+	userConfigDir, err := os.UserConfigDir()
 	if err != nil {
-		return "", nil
+		return "", err
 	}
-	cacheDir := path.Join(userCacheDir, AppName)
-	return cacheDir, MkdirIfNotExists(cacheDir)
+	configDir := path.Join(userConfigDir, AppName)
+	return configDir, MkdirIfNotExists(configDir)
 }
 
 // GetCacheDir gets the cache directory for this application
 func GetCacheDir() (string, error) {
 	userCacheDir, err := os.UserCacheDir()
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	cacheDir := path.Join(userCacheDir, AppName)
 	return cacheDir, MkdirIfNotExists(cacheDir)

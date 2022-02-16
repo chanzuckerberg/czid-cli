@@ -64,6 +64,9 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			fmt.Printf("Error reading config file: %s\n", err.Error())
+		} else {
+			fmt.Println(`Warning: config file not found. Run the command with "--config" to explicitly pass in a config file. Or set environment variables with the prefix CZID_CLI_* (eg CZID_CLI_SECRET)`)
 		}
+
 	}
 }
