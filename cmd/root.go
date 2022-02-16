@@ -66,7 +66,7 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			log.Fatal("Error reading config file: %s\n", err.Error())
+			log.Fatalf("Error reading config file: %s\n", err.Error())
 		} else if verbose {
 			fmt.Println("Config file not found. Run the command with '--config' to explicitly pass in a config.yaml file. Or set environment variables with the prefix CZID_CLI_* (eg CZID_CLI_SECRET)")
 		}
