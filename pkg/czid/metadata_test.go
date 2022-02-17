@@ -14,10 +14,10 @@ func TestCSVMetadata(t *testing.T) {
 	}
 	defer os.Remove(csv.Name())
 
-	csvData := []byte(`Sample Name,Host Genome,collection_location,Nucleotide Type
-sample one,Human,"California, USA",DNA
-sample two,Dog,"California, USA",RNA
-`)
+	csvData := []byte("Sample Name\u200b,Host Genome,collection_location,Nucleotide Type\n" +
+		"sample one,Human,\"California, USA\",DNA\n\n" +
+		"sample two,D\u200bog,\"California, USA\",RNA",
+	)
 
 	_, err = csv.Write(csvData)
 	if err != nil {
