@@ -31,12 +31,12 @@ var uploadSampleCmd = &cobra.Command{
 		}
 
 		sampleFiles := map[string]czid.SampleFiles{
-			sampleName: {Single: r1path},
+			sampleName: {Single: []string{r1path}},
 		}
 
 		if len(args) > 1 {
 			r2path = args[1]
-			sampleFiles[sampleName] = czid.SampleFiles{R1: r1path, R2: r2path}
+			sampleFiles[sampleName] = czid.SampleFiles{R1: []string{r1path}, R2: []string{r2path}}
 		}
 		if len(args) > 2 {
 			return fmt.Errorf("too many positional arguments (maximum 2), args: %v", args)
