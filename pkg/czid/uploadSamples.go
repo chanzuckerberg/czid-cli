@@ -70,7 +70,7 @@ func (c *Client) CreateSamples(
 
 	for sampleName := range samplesMetadata {
 		files := sampleFiles[sampleName]
-		filenames := []string{}
+		var filenames []string
 		// TODO concat files instead of using first
 		if len(files.Single) > 0 {
 			filenames = []string{files.Single[0]}
