@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"unicode"
 )
 
 type Metadata struct {
@@ -84,6 +85,12 @@ func (m Metadata) isHuman() bool {
 	return strings.ToLower(m.HostGenome) == "human"
 }
 
+func trimInvisible(s string) string {
+	return strings.TrimFunc(s, func(r rune) bool {
+		return !unicode.IsGraphic(r) || !unicode.IsPrint(r)
+	})
+}
+
 type SamplesMetadata = map[string]Metadata
 
 func CSVMetadata(csvpath string) (SamplesMetadata, error) {
@@ -102,6 +109,10 @@ func CSVMetadata(csvpath string) (SamplesMetadata, error) {
 		return samplesMetadata, nil
 	}
 	headers := rows[0]
+	for i, header := range headers {
+		headers[i] = trimInvisible(header)
+	}
+
 	hasSampleName := false
 	for _, header := range headers {
 		if header == "Sample Name" {
@@ -113,19 +124,23 @@ func CSVMetadata(csvpath string) (SamplesMetadata, error) {
 		return samplesMetadata, errors.New("column 'Sample Name' is required but it was not found")
 	}
 	for rowNum, row := range rows[1:] {
+		if len(row) == 0 || (len(row) == 1 && trimInvisible(row[0]) == "") {
+			continue
+		}
+
 		sampleName := ""
 		metadata := make(map[string]string, len(headers))
 		for i, header := range headers {
-			if header == "Sample Name" {
+			if trimInvisible(header) == "Sample Name" {
 				if i >= len(row) {
 					return samplesMetadata, fmt.Errorf("row %d is missing 'Sample Name'", rowNum)
 				}
-				sampleName = row[i]
+				sampleName = trimInvisible(row[i])
 			} else {
 				if i >= len(row) {
 					metadata[header] = ""
 				} else {
-					metadata[header] = row[i]
+					metadata[header] = trimInvisible(row[i])
 				}
 			}
 		}

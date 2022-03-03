@@ -42,11 +42,21 @@ func UploadSamplesFlow(
 			}
 		}
 	}
+	missing := false
 	for sampleName := range sampleFiles {
 		if _, hasMetadata := samplesMetadata[sampleName]; !hasMetadata {
-			samplesMetadata[sampleName] = NewMetadata(map[string]string{})
+			if metadataCSVPath != "" {
+				samplesMetadata[sampleName] = NewMetadata(map[string]string{})
+			} else {
+				log.Printf("missing metadata in metadata CSV for sample name '%s'\n", sampleName)
+				missing = true
+			}
 		}
 	}
+	if missing {
+		log.Fatal("missing metadata in CSV for samples")
+	}
+
 	for sampleName, m := range samplesMetadata {
 		samplesMetadata[sampleName] = m.Fuse(metadata)
 	}
