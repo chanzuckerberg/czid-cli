@@ -16,7 +16,7 @@ func IsInput(path string) bool {
 	return inputExp.MatchString(path)
 }
 
-var sampleNameExp = regexp.MustCompile(`(_L\d\d\d)?(_R[12]|_R[12]_001)?\.(fasta|fa|fastq|fq)(\.gz)?$`)
+var sampleNameExp = regexp.MustCompile(`(_L00\d)?(_R[12]|_R[12]_001)?\.(fasta|fa|fastq|fq)(\.gz)?$`)
 
 func ToSampleName(path string) string {
 	return sampleNameExp.ReplaceAllString(filepath.Base(path), "")
@@ -45,14 +45,6 @@ func extractLaneNumber(path string) (int, error) {
 		return n, fmt.Errorf("path has no lane number %s", path)
 	}
 	return n, nil
-}
-
-func sortByLaneNumber(arr *[]string) {
-	sort.Slice(*arr, func(i, j int) bool {
-		iN, _ := extractLaneNumber((*arr)[i])
-		jN, _ := extractLaneNumber((*arr)[i])
-		return iN < jN
-	})
 }
 
 type SampleFiles struct {
@@ -124,15 +116,15 @@ func SamplesFromDir(directory string, verbose bool) (map[string]SampleFiles, err
 		}
 
 		if len(pair.R1) > 1 {
-			sortByLaneNumber(&pair.R1)
+			sort.Strings(pair.R1)
 		}
 
 		if len(pair.R2) > 1 {
-			sortByLaneNumber(&pair.R2)
+			sort.Strings(pair.R2)
 		}
 
 		if len(pair.Single) > 1 {
-			sortByLaneNumber(&pair.Single)
+			sort.Strings(pair.Single)
 		}
 
 		if len(pair.R1) > 0 && len(pair.R2) > 0 {
