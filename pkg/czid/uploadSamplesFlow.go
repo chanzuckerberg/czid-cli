@@ -117,22 +117,23 @@ func UploadSamplesFlow(
 		sF := sampleFiles[sample.Name]
 		for _, inputFile := range sample.InputFiles {
 			filename := ""
-			if filepath.Base(sF.R1) == filepath.Base(inputFile.S3Path) {
-				filename = sF.R1
-			} else if filepath.Base(sF.R2) == filepath.Base(inputFile.S3Path) {
-				filename = sF.R2
-			} else if filepath.Base(sF.Single) == filepath.Base(inputFile.S3Path) {
-				filename = sF.Single
+			// TODO use concat file instead of picking first file
+			if len(sF.R1) > 0 && filepath.Base(sF.R1[0]) == filepath.Base(inputFile.S3Path) {
+				filename = sF.R1[0]
+			} else if len(sF.R2) > 0 && filepath.Base(sF.R2[0]) == filepath.Base(inputFile.S3Path) {
+				filename = sF.R2[0]
+			} else if len(sF.Single) > 0 && filepath.Base(sF.Single[0]) == filepath.Base(inputFile.S3Path) {
+				filename = sF.Single[0]
 			} else {
 				filenames := []string{}
-				if sF.R1 != "" {
-					filenames = append(filenames, sF.R1)
+				if len(sF.R1) > 0 {
+					filenames = append(filenames, sF.R1[0])
 				}
-				if sF.R2 != "" {
-					filenames = append(filenames, sF.R2)
+				if len(sF.R2) > 0 {
+					filenames = append(filenames, sF.R2[0])
 				}
-				if sF.Single != "" {
-					filenames = append(filenames, sF.Single)
+				if len(sF.Single) > 0 {
+					filenames = append(filenames, sF.Single[0])
 				}
 
 				return fmt.Errorf("s3 path %s did not match any of %s", inputFile.S3Path, strings.Join(filenames, ", "))
