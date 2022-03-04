@@ -71,11 +71,10 @@ func (c *Client) CreateSamples(
 	for sampleName := range samplesMetadata {
 		files := sampleFiles[sampleName]
 		var filenames []string
-		// TODO concat files instead of using first
 		if len(files.Single) > 0 {
-			filenames = []string{files.Single[0]}
+			filenames = []string{StripLaneNumber(files.Single[0])}
 		} else {
-			filenames = []string{files.R1[0], files.R2[0]}
+			filenames = []string{StripLaneNumber(files.R1[0]), StripLaneNumber(files.R2[0])}
 		}
 
 		sample := createSamplesReqSample{

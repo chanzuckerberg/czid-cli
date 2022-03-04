@@ -116,3 +116,11 @@ func TestSamplesFromDirPairAndSingle(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestStripLaneNumber(t *testing.T) {
+	newPath := StripLaneNumber("ABC_L001_R1.fasta")
+
+	if newPath != "ABC_R1.fasta" {
+		t.Errorf("'%s' != '%s'", newPath, "ABC_R1.fasta")
+	}
+}
