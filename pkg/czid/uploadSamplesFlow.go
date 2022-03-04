@@ -135,7 +135,7 @@ func UploadSamplesFlow(
 					allFilenames = append(allFilenames, StripLaneNumber(sF.Single[0]))
 				}
 
-				return fmt.Errorf("s3 path %s did not match any of %s", inputFile.S3Path, strings.Join(filenames, ", "))
+				return fmt.Errorf("s3 path %s did not match any of %s", inputFile.S3Path, strings.Join(allFilenames, ", "))
 			}
 			err := u.UploadFiles(filenames, inputFile.S3Path, inputFile.MultipartUploadId)
 			if err != nil {
