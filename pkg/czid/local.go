@@ -36,7 +36,7 @@ func IsR2(path string) bool {
 
 func extractLaneNumber(path string) (int, error) {
 	match := sampleNameExp.FindString(path)
-	if len(match) < 5 {
+	if len(match) < 5 || !strings.HasPrefix(match, "_L") {
 		return 0, fmt.Errorf("path has no lane number %s", path)
 	}
 
@@ -49,7 +49,7 @@ func extractLaneNumber(path string) (int, error) {
 
 func StripLaneNumber(path string) string {
 	match := sampleNameExp.FindString(path)
-	if len(match) < 5 {
+	if len(match) < 5 || !strings.HasPrefix(match, "_L") {
 		return path
 	}
 
