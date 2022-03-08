@@ -1,7 +1,6 @@
 package upload
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
@@ -126,12 +125,7 @@ func (u *Uploader) UploadFiles(filenames []string, s3path string, multipartUploa
 	input := s3.PutObjectInput{
 		Bucket: &parsedPath.Host,
 		Key:    &key,
-		Body:   bufio.NewReader(reader),
-	}
-
-	if size <= 1024*1024*5 {
-		_, err := u.client.PutObject(context.Background(), &input)
-		return err
+		Body:   reader,
 	}
 
 	_, err = u.client.HeadObject(context.Background(), &s3.HeadObjectInput{
