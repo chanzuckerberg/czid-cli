@@ -116,29 +116,28 @@ func UploadSamplesFlow(
 		u := upload.NewUploader(credentials, disableBuffer)
 		sF := sampleFiles[sample.Name]
 		for _, inputFile := range sample.InputFiles {
-			filename := ""
-			// TODO use concat file instead of picking first file
-			if len(sF.R1) > 0 && filepath.Base(sF.R1[0]) == filepath.Base(inputFile.S3Path) {
-				filename = sF.R1[0]
-			} else if len(sF.R2) > 0 && filepath.Base(sF.R2[0]) == filepath.Base(inputFile.S3Path) {
-				filename = sF.R2[0]
+			var filenames []string
+			if len(sF.R1) > 0 && filepath.Base(StripLaneNumber(sF.R1[0])) == filepath.Base(inputFile.S3Path) {
+				filenames = sF.R1
+			} else if len(sF.R2) > 0 && filepath.Base(StripLaneNumber(sF.R2[0])) == filepath.Base(inputFile.S3Path) {
+				filenames = sF.R2
 			} else if len(sF.Single) > 0 && filepath.Base(sF.Single[0]) == filepath.Base(inputFile.S3Path) {
-				filename = sF.Single[0]
+				filenames = sF.Single
 			} else {
-				filenames := []string{}
+				allFilenames := []string{}
 				if len(sF.R1) > 0 {
-					filenames = append(filenames, sF.R1[0])
+					allFilenames = append(allFilenames, StripLaneNumber(sF.R1[0]))
 				}
 				if len(sF.R2) > 0 {
-					filenames = append(filenames, sF.R2[0])
+					allFilenames = append(allFilenames, StripLaneNumber(sF.R2[0]))
 				}
 				if len(sF.Single) > 0 {
-					filenames = append(filenames, sF.Single[0])
+					allFilenames = append(allFilenames, StripLaneNumber(sF.Single[0]))
 				}
 
-				return fmt.Errorf("s3 path %s did not match any of %s", inputFile.S3Path, strings.Join(filenames, ", "))
+				return fmt.Errorf("s3 path %s did not match any of %s", inputFile.S3Path, strings.Join(allFilenames, ", "))
 			}
-			err := u.UploadFile(filename, inputFile.S3Path, inputFile.MultipartUploadId)
+			err := u.UploadFiles(filenames, inputFile.S3Path, inputFile.MultipartUploadId)
 			if err != nil {
 				log.Fatal(err)
 			}

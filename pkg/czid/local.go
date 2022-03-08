@@ -2,12 +2,12 @@ package czid
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 var inputExp = regexp.MustCompile(`\.(fasta|fa|fastq|fq)(\.gz)?$`)
@@ -36,8 +36,8 @@ func IsR2(path string) bool {
 
 func extractLaneNumber(path string) (int, error) {
 	match := sampleNameExp.FindString(path)
-	if len(match) < 5 {
-		log.Fatalf("path has no lane number %s", path)
+	if len(match) < 5 || !strings.HasPrefix(match, "_L") {
+		return 0, fmt.Errorf("path has no lane number %s", path)
 	}
 
 	n, err := strconv.Atoi(match[2:5])
@@ -45,6 +45,15 @@ func extractLaneNumber(path string) (int, error) {
 		return n, fmt.Errorf("path has no lane number %s", path)
 	}
 	return n, nil
+}
+
+func StripLaneNumber(path string) string {
+	match := sampleNameExp.FindString(path)
+	if len(match) < 5 || !strings.HasPrefix(match, "_L") {
+		return path
+	}
+
+	return sampleNameExp.ReplaceAllString(path, "") + match[5:]
 }
 
 type SampleFiles struct {
@@ -117,14 +126,17 @@ func SamplesFromDir(directory string, verbose bool) (map[string]SampleFiles, err
 
 		if len(pair.R1) > 1 {
 			sort.Strings(pair.R1)
+			fmt.Printf("concatenating lane files: %s\n", strings.Join(pair.R1, ", "))
 		}
 
 		if len(pair.R2) > 1 {
 			sort.Strings(pair.R2)
+			fmt.Printf("concatenating lane files: %s\n", strings.Join(pair.R2, ", "))
 		}
 
 		if len(pair.Single) > 1 {
 			sort.Strings(pair.Single)
+			fmt.Printf("concatenating lane files: %s\n", strings.Join(pair.Single, ", "))
 		}
 
 		if len(pair.R1) > 0 && len(pair.R2) > 0 {

@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -92,17 +94,26 @@ func (u *Uploader) runProgressBar(fileSize int64) {
 	}
 }
 
-func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId *string) error {
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
+func (u *Uploader) UploadFiles(filenames []string, s3path string, multipartUploadId *string) error {
+	size := int64(0)
+	for _, filename := range filenames {
+		stat, err := os.Stat(filename)
+		if err != nil {
+			return err
+		}
+		size += stat.Size()
 	}
-	defer f.Close()
 
-	stat, err := f.Stat()
-	if err != nil {
-		return err
+	readers := make([]io.Reader, len(filenames))
+	for i, filename := range filenames {
+		var err error
+		readers[i], err = os.Open(filename)
+		if err != nil {
+			return err
+		}
 	}
+
+	reader := io.MultiReader(readers...)
 
 	parsedPath, err := url.Parse(s3path)
 	if err != nil {
@@ -114,13 +125,7 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 	input := s3.PutObjectInput{
 		Bucket: &parsedPath.Host,
 		Key:    &key,
-		Body:   f,
-	}
-
-	if stat.Size() <= 1024*1024*5 {
-		input.Body = manager.NewBufferedReadSeeker(f, make([]byte, 1024*1024*2))
-		_, err := u.client.PutObject(context.Background(), &input)
-		return err
+		Body:   reader,
 	}
 
 	_, err = u.client.HeadObject(context.Background(), &s3.HeadObjectInput{
@@ -138,28 +143,28 @@ func (u *Uploader) UploadFile(filename string, s3path string, multipartUploadId 
 			return err
 		}
 	} else {
-		fmt.Printf("skipping upload of %s, already uploaded\n", filename)
+		fmt.Printf("skipping upload of %s: already uploaded\n", strings.Join(filenames, ", "))
 		return nil
 	}
 
 	u.c.parts = make(chan int64)
 	defer close(u.c.parts)
 
-	go u.runProgressBar(stat.Size())
+	go u.runProgressBar(size)
 
 	if multipartUploadId != nil {
-		fmt.Printf("resuming upload of %s\n", filename)
+		fmt.Printf("resuming upload of %s\n", strings.Join(filenames, ", "))
 		_, err = u.u.ResumeUpload(context.Background(), &input, multipartUploadId)
 		if err != nil {
 			fmt.Println("could not resume upload, starting fresh upload")
 			close(u.c.parts)
 			u.c.parts = make(chan int64)
 			defer close(u.c.parts)
-			go u.runProgressBar(stat.Size())
+			go u.runProgressBar(size)
 			_, err = u.u.Upload(context.Background(), &input)
 		}
 	} else {
-		fmt.Printf("starting upload of %s\n", filename)
+		fmt.Printf("starting upload of %s\n", strings.Join(filenames, ", "))
 		_, err = u.u.Upload(context.Background(), &input)
 	}
 	return err
