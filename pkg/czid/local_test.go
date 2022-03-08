@@ -123,4 +123,10 @@ func TestStripLaneNumber(t *testing.T) {
 	if newPath != "ABC_R1.fasta" {
 		t.Errorf("'%s' != '%s'", newPath, "ABC_R1.fasta")
 	}
+
+	newPath = StripLaneNumber("ABC_R1.fasta")
+
+	if newPath != "ABC_R1.fasta" {
+		t.Errorf("'%s' != '%s'", newPath, "ABC_R1.fasta")
+	}
 }
