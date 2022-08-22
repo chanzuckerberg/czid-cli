@@ -28,7 +28,7 @@ var Technologies = map[string]string{
 var technologyOptionsString string
 
 var WetlabProtocols = map[string]string{
-	"ARTIC v4/ARTIC v4.1":                            "artic_v4",
+	"ARTIC v4/ARTIC v4.1":                 "artic_v4",
 	"ARTIC v3 - Short Amplicons (275 bp)": "artic_short_amplicons",
 	"ARTIC v3":                            "artic",
 	"AmpliSeq":                            "ampliseq",
@@ -43,9 +43,9 @@ var wetlabProtocolOptionsString string
 
 var nanoporeWetLabProtocols = map[string]string{
 	"ARTIC v4/ARTIC v4.1": "artic_v4",
-	"Midnight": "midnight",
-	"ARTIC v3": "artic",
-	"Varskip": "varskip",
+	"Midnight":            "midnight",
+	"ARTIC v3":            "artic",
+	"Varskip":             "varskip",
 }
 var nanoporeWetlabProtocolOptionsString string
 var nanoporeDefaultWetlabProtocol = "ARTIC v3"
@@ -73,10 +73,14 @@ var MedakaModels = map[string]string{
 	"r941_prom_variant_g303":  "r941_prom_variant_g303",
 	"r941_prom_variant_g322":  "r941_prom_variant_g322",
 	"r941_prom_variant_g360":  "r941_prom_variant_g360",
-	"": "",
+	"":                        "",
 }
 var medakaModelsString string
 var defaultMedakaModel = "r941_min_high_g360"
+
+var referenceAccession string
+var referenceFasta string
+var primerBed string
 
 // ConsensusGenomeCmd represents the ConsensusGenome command
 var ConsensusGenomeCmd = &cobra.Command{
@@ -132,6 +136,9 @@ func loadSharedFlags(c *cobra.Command) {
 		nanoporeDefaultWetlabProtocol,
 		defaultMedakaModel,
 	))
+	c.Flags().StringVar(&referenceAccession, "reference-accession", "", "reference accession ID, ignored if reference-fasta is set")
+	c.Flags().StringVar(&referenceFasta, "reference-fasta", "", "reference fasta file")
+	c.Flags().StringVar(&primerBed, "primer-bed", "", "primer file (.bed), only supported with --sequencing-platform Illumina")
 	c.Flags().BoolVar(&disableBuffer, "disable-buffer", false, "Disable shared buffer pool (useful if running out of memory)")
 }
 

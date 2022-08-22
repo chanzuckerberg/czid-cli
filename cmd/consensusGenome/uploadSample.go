@@ -46,16 +46,20 @@ var uploadSampleCmd = &cobra.Command{
 			return errors.New("r1 and r2 cannot be the same file")
 		}
 
+		options := czid.SampleOptions{
+			Technology:     Technologies[technology],
+			WetlabProtocol: WetlabProtocols[wetlabProtocol],
+			MedakaModel:    MedakaModels[medakaModel],
+			ClearLabs:      clearLabs,
+		}
+
 		return czid.UploadSamplesFlow(
 			sampleFiles,
 			stringMetadata,
 			projectName,
 			metadataCSVPath,
 			"consensus-genome",
-			Technologies[technology],
-			WetlabProtocols[wetlabProtocol],
-			MedakaModels[medakaModel],
-			clearLabs,
+			options,
 			disableBuffer,
 		)
 	},

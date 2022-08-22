@@ -18,10 +18,7 @@ func UploadSamplesFlow(
 	projectName string,
 	metadataCSVPath string,
 	workflow string,
-	technology string,
-	wetlabProtocol string,
-	medakaModel string,
-	clearLabs bool,
+	sampleOptions SampleOptions,
 	disableBuffer bool,
 ) error {
 	metadata := NewMetadata(stringMetadata)
@@ -98,10 +95,7 @@ func UploadSamplesFlow(
 		sampleFiles,
 		samplesMetadata,
 		workflow,
-		technology,
-		wetlabProtocol,
-		medakaModel,
-		clearLabs,
+		sampleOptions,
 	)
 	if err != nil {
 		log.Fatal(err)

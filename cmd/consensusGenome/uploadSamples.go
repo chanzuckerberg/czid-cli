@@ -33,16 +33,21 @@ var uploadSamplesCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		options := czid.SampleOptions{
+			Technology:     Technologies[technology],
+			WetlabProtocol: WetlabProtocols[wetlabProtocol],
+			MedakaModel:    MedakaModels[medakaModel],
+			ClearLabs:      clearLabs,
+		}
+
 		return czid.UploadSamplesFlow(
 			sampleFiles,
 			stringMetadata,
 			projectName,
 			metadataCSVPath,
 			"consensus-genome",
-			Technologies[technology],
-			WetlabProtocols[wetlabProtocol],
-			MedakaModels[medakaModel],
-			clearLabs,
+			options,
 			disableBuffer,
 		)
 	},
