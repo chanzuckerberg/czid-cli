@@ -2,7 +2,7 @@ package consensusGenome
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -21,7 +21,7 @@ func TestClearLabsWithIncorrectParams(t *testing.T) {
 		t.Fatal("expected an error")
 	}
 
-	errOut, err := ioutil.ReadAll(e)
+	errOut, err := io.ReadAll(e)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func TestNanoporeWithIncorrectParams(t *testing.T) {
 		t.Fatal("expected an error")
 	}
 
-	errOut, err := ioutil.ReadAll(e)
+	errOut, err := io.ReadAll(e)
 	if err != nil {
 		t.Fatal(err)
 	}

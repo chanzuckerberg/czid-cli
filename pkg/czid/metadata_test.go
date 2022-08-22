@@ -2,13 +2,12 @@ package czid
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"testing"
 )
 
 func TestCSVMetadata(t *testing.T) {
-	csv, err := ioutil.TempFile("", "*.csv")
+	csv, err := os.CreateTemp("", "*.csv")
 	if err != nil {
 		t.Fatal(err)
 	}

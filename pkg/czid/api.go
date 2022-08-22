@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -97,7 +97,7 @@ func (c *Client) request(method string, path string, query string, reqBody inter
 	}
 	defer res.Body.Close()
 
-	resBodyBytes, err := ioutil.ReadAll(res.Body)
+	resBodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
 		return err
 	}

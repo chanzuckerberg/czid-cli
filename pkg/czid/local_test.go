@@ -3,14 +3,13 @@ package czid
 import (
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
 )
 
 func TestSamplesFromDir(t *testing.T) {
-	dirname, err := ioutil.TempDir(".", "samples")
+	dirname, err := os.MkdirTemp(".", "samples")
 	defer os.RemoveAll(dirname)
 	if err != nil {
 		t.Error(err)
@@ -18,7 +17,7 @@ func TestSamplesFromDir(t *testing.T) {
 
 	filenames := []string{"ABC_L001_R1.fasta", "ABC_L002_R1.fasta", "ABC_L002_R2.fasta", "ABC_L001_R2.fasta", "DEF.fasta"}
 	for _, filename := range filenames {
-		err := ioutil.WriteFile(path.Join(dirname, filename), []byte{}, fs.ModePerm)
+		err := os.WriteFile(path.Join(dirname, filename), []byte{}, fs.ModePerm)
 		if err != nil {
 			t.Error(err)
 		}
@@ -52,7 +51,7 @@ func TestSamplesFromDir(t *testing.T) {
 }
 
 func TestSamplesFromDirMissingLane(t *testing.T) {
-	dirname, err := ioutil.TempDir(".", "samples")
+	dirname, err := os.MkdirTemp(".", "samples")
 	defer os.RemoveAll(dirname)
 	if err != nil {
 		t.Error(err)
@@ -60,7 +59,7 @@ func TestSamplesFromDirMissingLane(t *testing.T) {
 
 	filenames := []string{"ABC_L001_R1.fasta", "ABC_L002_R1.fasta", "ABC_L002_R2.fasta"}
 	for _, filename := range filenames {
-		err := ioutil.WriteFile(path.Join(dirname, filename), []byte{}, fs.ModePerm)
+		err := os.WriteFile(path.Join(dirname, filename), []byte{}, fs.ModePerm)
 		if err != nil {
 			t.Error(err)
 		}
@@ -74,7 +73,7 @@ func TestSamplesFromDirMissingLane(t *testing.T) {
 }
 
 func TestSamplesFromDirMissingPair(t *testing.T) {
-	dirname, err := ioutil.TempDir(".", "samples")
+	dirname, err := os.MkdirTemp(".", "samples")
 	defer os.RemoveAll(dirname)
 	if err != nil {
 		t.Error(err)
@@ -82,7 +81,7 @@ func TestSamplesFromDirMissingPair(t *testing.T) {
 
 	filenames := []string{"ABC_L001_R1.fasta"}
 	for _, filename := range filenames {
-		err := ioutil.WriteFile(path.Join(dirname, filename), []byte{}, fs.ModePerm)
+		err := os.WriteFile(path.Join(dirname, filename), []byte{}, fs.ModePerm)
 		if err != nil {
 			t.Error(err)
 		}
@@ -96,7 +95,7 @@ func TestSamplesFromDirMissingPair(t *testing.T) {
 }
 
 func TestSamplesFromDirPairAndSingle(t *testing.T) {
-	dirname, err := ioutil.TempDir(".", "samples")
+	dirname, err := os.MkdirTemp(".", "samples")
 	defer os.RemoveAll(dirname)
 	if err != nil {
 		t.Error(err)
@@ -104,7 +103,7 @@ func TestSamplesFromDirPairAndSingle(t *testing.T) {
 
 	filenames := []string{"ABC_L001_R1.fasta", "ABC_L001.fasta"}
 	for _, filename := range filenames {
-		err := ioutil.WriteFile(path.Join(dirname, filename), []byte{}, fs.ModePerm)
+		err := os.WriteFile(path.Join(dirname, filename), []byte{}, fs.ModePerm)
 		if err != nil {
 			t.Error(err)
 		}

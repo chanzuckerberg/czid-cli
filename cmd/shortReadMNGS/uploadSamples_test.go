@@ -2,7 +2,7 @@ package shortReadMNGS
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"github.com/spf13/viper"
@@ -21,7 +21,7 @@ func TestWithoutProjectID(t *testing.T) {
 		t.Fatal("expected an error")
 	}
 
-	errOut, err := ioutil.ReadAll(e)
+	errOut, err := io.ReadAll(e)
 	if err != nil {
 		t.Fatal(err)
 	}

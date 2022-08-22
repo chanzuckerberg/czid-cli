@@ -2,7 +2,7 @@ package czid
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -20,6 +20,6 @@ func newMockHTTPClient(response []byte) mockHTTPClient {
 
 func (c *mockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	c.calls = append(c.calls, req)
-	body := ioutil.NopCloser(bytes.NewReader(c.response))
+	body := io.NopCloser(bytes.NewReader(c.response))
 	return &http.Response{StatusCode: 200, Body: body}, nil
 }
