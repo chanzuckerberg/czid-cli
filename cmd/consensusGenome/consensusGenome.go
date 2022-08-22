@@ -136,7 +136,7 @@ func loadSharedFlags(c *cobra.Command) {
 		nanoporeDefaultWetlabProtocol,
 		defaultMedakaModel,
 	))
-	c.Flags().StringVar(&referenceAccession, "reference-accession", "", "reference accession ID, ignored if reference-fasta is set")
+	c.Flags().StringVar(&referenceAccession, "reference-accession", "", "reference accession ID, cannot be used if reference-fasta is set")
 	c.Flags().StringVar(&referenceFasta, "reference-fasta", "", "reference fasta file")
 	c.Flags().StringVar(&primerBed, "primer-bed", "", "primer file (.bed), only supported with --sequencing-platform Illumina")
 	c.Flags().BoolVar(&disableBuffer, "disable-buffer", false, "Disable shared buffer pool (useful if running out of memory)")
@@ -178,5 +178,10 @@ func validateCommonArgs() error {
 			return fmt.Errorf("medaka-model %s is required with clearlabs", defaultMedakaModel)
 		}
 	}
+
+	if referenceAccession != "" && referenceFasta != "" {
+		return fmt.Errorf("reference-accession can't be used if reference-fasta is set")
+	}
+
 	return nil
 }

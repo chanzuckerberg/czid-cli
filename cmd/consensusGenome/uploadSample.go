@@ -31,13 +31,23 @@ var uploadSampleCmd = &cobra.Command{
 			sampleName = czid.ToSampleName(r1path)
 		}
 
+		referenceFastas := []string{}
+		if referenceFasta != "" {
+			referenceFastas = []string{referenceFasta}
+		}
+
+		primerBeds := []string{}
+		if primerBed != "" {
+			primerBeds = []string{primerBed}
+		}
+
 		sampleFiles := map[string]czid.SampleFiles{
-			sampleName: {Single: []string{r1path}},
+			sampleName: {Single: []string{r1path}, ReferenceFasta: referenceFastas, PrimerBed: primerBeds},
 		}
 
 		if len(args) > 1 {
 			r2path = args[1]
-			sampleFiles[sampleName] = czid.SampleFiles{R1: []string{r1path}, R2: []string{r2path}}
+			sampleFiles[sampleName] = czid.SampleFiles{R1: []string{r1path}, R2: []string{r2path}, ReferenceFasta: referenceFastas, PrimerBed: primerBeds}
 		}
 		if len(args) > 2 {
 			return fmt.Errorf("too many positional arguments (maximum 2), args: %v", args)
@@ -47,10 +57,13 @@ var uploadSampleCmd = &cobra.Command{
 		}
 
 		options := czid.SampleOptions{
-			Technology:     Technologies[technology],
-			WetlabProtocol: WetlabProtocols[wetlabProtocol],
-			MedakaModel:    MedakaModels[medakaModel],
-			ClearLabs:      clearLabs,
+			Technology:         Technologies[technology],
+			WetlabProtocol:     WetlabProtocols[wetlabProtocol],
+			MedakaModel:        MedakaModels[medakaModel],
+			ClearLabs:          clearLabs,
+			ReferenceAccession: referenceAccession,
+			ReferenceFasta:     referenceFasta,
+			PrimerBed:          primerBed,
 		}
 
 		return czid.UploadSamplesFlow(

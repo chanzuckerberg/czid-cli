@@ -77,6 +77,13 @@ func (c *Client) CreateSamples(
 			filenames = []string{StripLaneNumber(files.R1[0]), StripLaneNumber(files.R2[0])}
 		}
 
+		if len(files.ReferenceFasta) > 0 {
+			filenames = append(filenames, files.ReferenceFasta[0])
+		}
+		if len(files.PrimerBed) > 0 {
+			filenames = append(filenames, files.PrimerBed[0])
+		}
+
 		sample := CreateSamplesReqSample{
 			HostGenomeName:      samplesMetadata[sampleName].HostGenome,
 			InputFileAttributes: make([]createSamplesReqInputFile, len(filenames)),

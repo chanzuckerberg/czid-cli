@@ -117,6 +117,10 @@ func UploadSamplesFlow(
 				filenames = sF.R2
 			} else if len(sF.Single) > 0 && filepath.Base(sF.Single[0]) == filepath.Base(inputFile.S3Path) {
 				filenames = sF.Single
+			} else if len(sF.ReferenceFasta) > 0 && filepath.Base(sF.ReferenceFasta[0]) == filepath.Base(inputFile.S3Path) {
+				filenames = sF.ReferenceFasta
+			} else if len(sF.PrimerBed) > 0 && filepath.Base(sF.PrimerBed[0]) == filepath.Base(inputFile.S3Path) {
+				filenames = sF.PrimerBed
 			} else {
 				allFilenames := []string{}
 				if len(sF.R1) > 0 {
@@ -127,6 +131,12 @@ func UploadSamplesFlow(
 				}
 				if len(sF.Single) > 0 {
 					allFilenames = append(allFilenames, StripLaneNumber(sF.Single[0]))
+				}
+				if len(sF.ReferenceFasta) > 0 {
+					allFilenames = append(allFilenames, StripLaneNumber(sF.ReferenceFasta[0]))
+				}
+				if len(sF.Single) > 0 {
+					allFilenames = append(allFilenames, StripLaneNumber(sF.PrimerBed[0]))
 				}
 
 				return fmt.Errorf("s3 path %s did not match any of %s", inputFile.S3Path, strings.Join(allFilenames, ", "))
