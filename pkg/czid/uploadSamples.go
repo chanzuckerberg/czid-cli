@@ -28,8 +28,6 @@ type CreateSamplesReqSample struct {
 	MedakaModel         *string                     `json:"medaka_model,omitempty"`
 	ClearLabs           *bool                       `json:"clearlabs,omitempty"`
 	ReferenceAccession  *string                     `json:"reference_accession,omitempty"`
-	ReferenceFasta      *string                     `json:"reference_fasta,omitempty"`
-	PrimerBed           *string                     `json:"primer_bed,omitempty"`
 }
 
 type samplesReq struct {
@@ -77,13 +75,6 @@ func (c *Client) CreateSamples(
 			filenames = []string{StripLaneNumber(files.R1[0]), StripLaneNumber(files.R2[0])}
 		}
 
-		if len(files.ReferenceFasta) > 0 {
-			filenames = append(filenames, files.ReferenceFasta[0])
-		}
-		if len(files.PrimerBed) > 0 {
-			filenames = append(filenames, files.PrimerBed[0])
-		}
-
 		sample := CreateSamplesReqSample{
 			HostGenomeName:      samplesMetadata[sampleName].HostGenome,
 			InputFileAttributes: make([]createSamplesReqInputFile, len(filenames)),
@@ -113,14 +104,6 @@ func (c *Client) CreateSamples(
 			sample.ReferenceAccession = &sampleOptions.ReferenceAccession
 		}
 
-		if sampleOptions.ReferenceFasta != "" {
-			sample.ReferenceFasta = &sampleOptions.ReferenceFasta
-		}
-
-		if sampleOptions.PrimerBed != "" {
-			sample.PrimerBed = &sampleOptions.PrimerBed
-		}
-
 		for i, filename := range filenames {
 			sample.InputFileAttributes[i] = createSamplesReqInputFile{
 				Name:         filepath.Base(filename),
@@ -130,6 +113,27 @@ func (c *Client) CreateSamples(
 				UploadClient: "cli",
 			}
 		}
+
+		if len(files.ReferenceFasta) > 0 {
+			sample.InputFileAttributes = append(sample.InputFileAttributes, createSamplesReqInputFile{
+				Name:         filepath.Base("extra.consensus_genome.ref_fasta"),
+				Parts:        filepath.Base(files.ReferenceFasta[0]),
+				Source:       filepath.Base(files.ReferenceFasta[0]),
+				SourceType:   "local",
+				UploadClient: "cli",
+			})
+		}
+
+		if len(files.PrimerBed) > 0 {
+			sample.InputFileAttributes = append(sample.InputFileAttributes, createSamplesReqInputFile{
+				Name:         filepath.Base("extra.consensus_genome.primer_bed"),
+				Parts:        filepath.Base(files.PrimerBed[0]),
+				Source:       filepath.Base(files.PrimerBed[0]),
+				SourceType:   "local",
+				UploadClient: "cli",
+			})
+		}
+
 		req.Samples = append(req.Samples, sample)
 	}
 
