@@ -27,7 +27,7 @@ type CreateSamplesReqSample struct {
 	WetlabProtocol      string                      `json:"wetlab_protocol"`
 	MedakaModel         *string                     `json:"medaka_model,omitempty"`
 	ClearLabs           *bool                       `json:"clearlabs,omitempty"`
-	ReferenceAccession  *string                     `json:"reference_accession,omitempty"`
+	ReferenceAccession  *string                     `json:"accession_id,omitempty"`
 	ReferenceFasta      *string                     `json:"reference_fasta,omitempty"`
 	PrimerBed           *string                     `json:"primer_bed,omitempty"`
 }
