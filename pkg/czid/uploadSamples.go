@@ -114,11 +114,13 @@ func (c *Client) CreateSamples(
 		}
 
 		if sampleOptions.ReferenceFasta != "" {
-			sample.ReferenceFasta = &sampleOptions.ReferenceFasta
+			referenceFasta := filepath.Base(sampleOptions.ReferenceFasta)
+			sample.ReferenceFasta = &referenceFasta
 		}
 
 		if sampleOptions.PrimerBed != "" {
-			sample.PrimerBed = &sampleOptions.PrimerBed
+			primerBed := filepath.Base(sampleOptions.PrimerBed)
+			sample.PrimerBed = &primerBed
 		}
 
 		for i, filename := range filenames {
