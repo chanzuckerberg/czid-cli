@@ -31,6 +31,8 @@ builds:
   ignore:
     - goos: linux
       goarch: amd64
+    - goos: windows
+      goarch: arm64
   ldflags: *ldflags
 
 release:
