@@ -28,7 +28,7 @@ type CreateSamplesReqSample struct {
 	MedakaModel         *string                     `json:"medaka_model,omitempty"`
 	ClearLabs           *bool                       `json:"clearlabs,omitempty"`
 	ReferenceAccession  *string                     `json:"accession_id,omitempty"`
-	ReferenceFasta      *string                     `json:"reference_fasta,omitempty"`
+	ReferenceFasta      *string                     `json:"ref_fasta,omitempty"`
 	PrimerBed           *string                     `json:"primer_bed,omitempty"`
 }
 
@@ -137,7 +137,6 @@ func (c *Client) CreateSamples(
 
 	res := createSamplesRes{}
 	err := c.request("POST", "/samples/bulk_upload_with_metadata.json", "", req, &res)
-
 	if len(res.Errors) > 0 {
 		fmt.Println("encountered errors while uploading")
 		for _, e := range res.Errors {
