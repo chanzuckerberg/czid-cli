@@ -33,16 +33,38 @@ var uploadSamplesCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		if referenceFasta != "" {
+			for sampleName, files := range sampleFiles {
+				files.ReferenceFasta = []string{referenceFasta}
+				sampleFiles[sampleName] = files
+			}
+		}
+
+		if primerBed != "" {
+			for sampleName, files := range sampleFiles {
+				files.PrimerBed = []string{primerBed}
+				sampleFiles[sampleName] = files
+			}
+		}
+
+		options := czid.SampleOptions{
+			Technology:         Technologies[technology],
+			WetlabProtocol:     WetlabProtocols[wetlabProtocol],
+			MedakaModel:        MedakaModels[medakaModel],
+			ClearLabs:          clearLabs,
+			ReferenceAccession: referenceAccession,
+			ReferenceFasta:     referenceFasta,
+			PrimerBed:          primerBed,
+		}
+
 		return czid.UploadSamplesFlow(
 			sampleFiles,
 			stringMetadata,
 			projectName,
 			metadataCSVPath,
 			"consensus-genome",
-			Technologies[technology],
-			WetlabProtocols[wetlabProtocol],
-			MedakaModels[medakaModel],
-			clearLabs,
+			options,
 			disableBuffer,
 		)
 	},

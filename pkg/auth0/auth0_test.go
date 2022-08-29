@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -74,7 +73,7 @@ func TestLoginPersistent(t *testing.T) {
 }
 
 func tempViper() (*os.File, *viper.Viper, error) {
-	tmpfile, err := ioutil.TempFile("", "*.yaml")
+	tmpfile, err := os.CreateTemp("", "*.yaml")
 	v := viper.New()
 	v.SetConfigFile(tmpfile.Name())
 	return tmpfile, v, err

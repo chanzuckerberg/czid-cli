@@ -16,7 +16,7 @@ type createSamplesReqInputFile struct {
 	UploadClient string `json:"upload_client"`
 }
 
-type createSamplesReqSample struct {
+type CreateSamplesReqSample struct {
 	HostGenomeName      string                      `json:"host_genome_name"`
 	InputFileAttributes []createSamplesReqInputFile `json:"input_files_attributes"`
 	Name                string                      `json:"name"`
@@ -27,12 +27,15 @@ type createSamplesReqSample struct {
 	WetlabProtocol      string                      `json:"wetlab_protocol"`
 	MedakaModel         *string                     `json:"medaka_model,omitempty"`
 	ClearLabs           *bool                       `json:"clearlabs,omitempty"`
+	ReferenceAccession  *string                     `json:"accession_id,omitempty"`
+	ReferenceFasta      *string                     `json:"ref_fasta,omitempty"`
+	PrimerBed           *string                     `json:"primer_bed,omitempty"`
 }
 
 type samplesReq struct {
 	Client   string                   `json:"client"`
 	Metadata SamplesMetadata          `json:"metadata"`
-	Samples  []createSamplesReqSample `json:"samples"`
+	Samples  []CreateSamplesReqSample `json:"samples"`
 }
 
 type createSamplesResSample struct {
@@ -58,10 +61,7 @@ func (c *Client) CreateSamples(
 	sampleFiles map[string]SampleFiles,
 	samplesMetadata SamplesMetadata,
 	workflow string,
-	technology string,
-	wetlabProtocol string,
-	medakaModel string,
-	clearlabs bool,
+	sampleOptions SampleOptions,
 ) ([]createSamplesResSample, error) {
 	req := samplesReq{
 		Metadata: samplesMetadata,
@@ -77,23 +77,50 @@ func (c *Client) CreateSamples(
 			filenames = []string{StripLaneNumber(files.R1[0]), StripLaneNumber(files.R2[0])}
 		}
 
-		sample := createSamplesReqSample{
+		if len(files.ReferenceFasta) > 0 {
+			filenames = append(filenames, files.ReferenceFasta[0])
+		}
+		if len(files.PrimerBed) > 0 {
+			filenames = append(filenames, files.PrimerBed[0])
+		}
+
+		sample := CreateSamplesReqSample{
 			HostGenomeName:      samplesMetadata[sampleName].HostGenome,
 			InputFileAttributes: make([]createSamplesReqInputFile, len(filenames)),
 			Name:                sampleName,
 			ProjectID:           projectID,
 			Status:              "created",
 			Workflows:           []string{workflow},
-			Technology:          technology,
-			WetlabProtocol:      wetlabProtocol,
 		}
 
-		if medakaModel != "" {
-			sample.MedakaModel = &medakaModel
+		if sampleOptions.Technology != "" {
+			sample.Technology = sampleOptions.Technology
 		}
 
-		if clearlabs {
-			sample.ClearLabs = &clearlabs
+		if sampleOptions.WetlabProtocol != "" {
+			sample.WetlabProtocol = sampleOptions.WetlabProtocol
+		}
+
+		if sampleOptions.MedakaModel != "" {
+			sample.MedakaModel = &sampleOptions.MedakaModel
+		}
+
+		if sampleOptions.ClearLabs {
+			sample.ClearLabs = &sampleOptions.ClearLabs
+		}
+
+		if sampleOptions.ReferenceAccession != "" {
+			sample.ReferenceAccession = &sampleOptions.ReferenceAccession
+		}
+
+		if sampleOptions.ReferenceFasta != "" {
+			referenceFasta := filepath.Base(sampleOptions.ReferenceFasta)
+			sample.ReferenceFasta = &referenceFasta
+		}
+
+		if sampleOptions.PrimerBed != "" {
+			primerBed := filepath.Base(sampleOptions.PrimerBed)
+			sample.PrimerBed = &primerBed
 		}
 
 		for i, filename := range filenames {
@@ -110,7 +137,6 @@ func (c *Client) CreateSamples(
 
 	res := createSamplesRes{}
 	err := c.request("POST", "/samples/bulk_upload_with_metadata.json", "", req, &res)
-
 	if len(res.Errors) > 0 {
 		fmt.Println("encountered errors while uploading")
 		for _, e := range res.Errors {

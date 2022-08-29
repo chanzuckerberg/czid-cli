@@ -39,10 +39,7 @@ var uploadSamplesCmd = &cobra.Command{
 			projectName,
 			metadataCSVPath,
 			"short-read-mngs",
-			"",
-			"",
-			"",
-			false,
+			czid.SampleOptions{},
 			disableBuffer,
 		)
 	},

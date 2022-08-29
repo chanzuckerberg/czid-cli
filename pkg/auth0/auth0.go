@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os/exec"
@@ -114,7 +114,7 @@ func formPost(path string, params map[string]string, r interface{}) error {
 	}
 
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return err
 	}
@@ -132,7 +132,7 @@ func formPost(path string, params map[string]string, r interface{}) error {
 
 type Auth0 interface {
 	IDToken() (string, error)
-	Login(headless bool, persistent bool) error 
+	Login(headless bool, persistent bool) error
 	Secret() (string, bool)
 }
 

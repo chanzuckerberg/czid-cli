@@ -57,9 +57,11 @@ func StripLaneNumber(path string) string {
 }
 
 type SampleFiles struct {
-	R1     []string
-	R2     []string
-	Single []string
+	R1             []string
+	R2             []string
+	Single         []string
+	ReferenceFasta []string
+	PrimerBed      []string
 }
 
 func SamplesFromDir(directory string, verbose bool) (map[string]SampleFiles, error) {
