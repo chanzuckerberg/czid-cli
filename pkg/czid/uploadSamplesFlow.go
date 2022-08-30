@@ -21,41 +21,14 @@ func UploadSamplesFlow(
 	sampleOptions SampleOptions,
 	disableBuffer bool,
 ) error {
-	metadata := NewMetadata(stringMetadata)
 	projectID, err := DefaultClient.GetProjectID(projectName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	samplesMetadata := SamplesMetadata{}
-	if metadataCSVPath != "" {
-		samplesMetadata, err = CSVMetadata(metadataCSVPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		for sampleName := range samplesMetadata {
-			if _, hasSampleName := sampleFiles[sampleName]; !hasSampleName {
-				delete(samplesMetadata, sampleName)
-			}
-		}
-	}
-	missing := false
-	for sampleName := range sampleFiles {
-		if _, hasMetadata := samplesMetadata[sampleName]; !hasMetadata {
-			if metadataCSVPath != "" {
-				samplesMetadata[sampleName] = NewMetadata(map[string]string{})
-			} else {
-				log.Printf("missing metadata in metadata CSV for sample name '%s'\n", sampleName)
-				missing = true
-			}
-		}
-	}
-	if missing {
-		log.Fatal("missing metadata in CSV for samples")
-	}
-
-	for sampleName, m := range samplesMetadata {
-		samplesMetadata[sampleName] = m.Fuse(metadata)
+	samplesMetadata, err := GetCombinedMetadata(sampleFiles, stringMetadata, metadataCSVPath)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	sampleNames := make([]string, 0, len(sampleFiles))

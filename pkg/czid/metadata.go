@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"unicode"
@@ -146,6 +147,47 @@ func CSVMetadata(csvpath string) (SamplesMetadata, error) {
 		}
 		samplesMetadata[sampleName] = NewMetadata(metadata)
 	}
+	return samplesMetadata, nil
+}
+
+// GetCombinedMetadata parses the metadata CSV, validates it, then fuses it with flag-based metadata
+func GetCombinedMetadata(sampleFiles map[string]SampleFiles, stringMetadata map[string]string, metadataCSVPath string) (SamplesMetadata, error) {
+	metadata := NewMetadata(stringMetadata)
+	hasMetadataCSV := metadataCSVPath != ""
+
+	samplesMetadata := SamplesMetadata{}
+	if hasMetadataCSV {
+		var err error
+		samplesMetadata, err = CSVMetadata(metadataCSVPath)
+		if err != nil {
+			return samplesMetadata, err
+		}
+
+		for sampleName := range samplesMetadata {
+			if _, hasSampleName := sampleFiles[sampleName]; !hasSampleName {
+				delete(samplesMetadata, sampleName)
+			}
+		}
+	}
+	missing := false
+	for sampleName := range sampleFiles {
+		if _, hasMetadata := samplesMetadata[sampleName]; !hasMetadata {
+			if !hasMetadataCSV {
+				samplesMetadata[sampleName] = NewMetadata(map[string]string{})
+			} else {
+				log.Printf("missing metadata in metadata CSV for sample name '%s'\n", sampleName)
+				missing = true
+			}
+		}
+	}
+	if missing {
+		return samplesMetadata, fmt.Errorf("missing metadata in CSV for samples")
+	}
+
+	for sampleName, m := range samplesMetadata {
+		samplesMetadata[sampleName] = m.Fuse(metadata)
+	}
+
 	return samplesMetadata, nil
 }
 
