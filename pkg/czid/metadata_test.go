@@ -6,12 +6,11 @@ import (
 	"testing"
 )
 
-func TestCSVMetadata(t *testing.T) {
+func createDummyMetadataCSV() (string, error) {
 	csv, err := os.CreateTemp("", "*.csv")
 	if err != nil {
-		t.Fatal(err)
+		return csv.Name(), err
 	}
-	defer os.Remove(csv.Name())
 
 	csvData := []byte("Sample Name\u200b,Host Genome,collection_location,Nucleotide Type\n" +
 		"sample one,Human,\"California, USA\",DNA\n\n" +
@@ -19,11 +18,17 @@ func TestCSVMetadata(t *testing.T) {
 	)
 
 	_, err = csv.Write(csvData)
+	return csv.Name(), err
+}
+
+func TestCSVMetadata(t *testing.T) {
+	csvName, err := createDummyMetadataCSV()
+	defer os.Remove(csvName)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	samplesMetadata, err := CSVMetadata(csv.Name())
+	samplesMetadata, err := CSVMetadata(csvName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,6 +43,75 @@ func TestCSVMetadata(t *testing.T) {
 
 	if samplesMetadata["sample one"].rawCollectionLocation != "California, USA" {
 		t.Errorf("expected rawCollectionLocation to be \"California, USA\" but it was \"%s\"", samplesMetadata["sample one"].rawCollectionLocation)
+	}
+}
+
+func TestGetCombinedMetadata(t *testing.T) {
+	csvName, err := createDummyMetadataCSV()
+	defer os.Remove(csvName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dummySampleFiles := SampleFiles{}
+	sampleFiles := map[string]SampleFiles{"sample one": dummySampleFiles, "sample two": dummySampleFiles}
+	stringMetadata := map[string]string{"Nucleotide Type": "DNA", "Foo": "Bar"}
+
+	samplesMetadata, err := GetCombinedMetadata(sampleFiles, stringMetadata, csvName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if samplesMetadata["sample two"].HostGenome != "D\u200bog" {
+		t.Errorf("sample two should have 'Host Genome' from CSV but it was '%s'", samplesMetadata["sample two"].HostGenome)
+	}
+
+	if samplesMetadata["sample two"].fields["Nucleotide Type"] != "DNA" {
+		t.Errorf("sample two should have 'Nucleotide Type' overwritten with 'DNA' from flags but it was '%s'", samplesMetadata["sample two"].fields["Nucleotide Type"])
+	}
+}
+
+func TestGetCombinedMetadataWithoutCSV(t *testing.T) {
+	dummySampleFiles := SampleFiles{}
+	sampleFiles := map[string]SampleFiles{"sample one": dummySampleFiles, "sample two": dummySampleFiles}
+	stringMetadata := map[string]string{"Nucleotide Type": "DNA", "Foo": "Bar"}
+
+	samplesMetadata, err := GetCombinedMetadata(sampleFiles, stringMetadata, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if samplesMetadata["sample one"].fields["Nucleotide Type"] != "DNA" {
+		t.Errorf("sample one should have 'Nucleotide Type' 'DNA' from flags but it was '%s'", samplesMetadata["sample one"].fields["Nucleotide Type"])
+	}
+
+	if samplesMetadata["sample two"].fields["Nucleotide Type"] != "DNA" {
+		t.Errorf("sample two should have 'Nucleotide Type' 'DNA' from flags but it was '%s'", samplesMetadata["sample two"].fields["Nucleotide Type"])
+	}
+}
+
+func TestGetCombinedMetadataMissingFromCSV(t *testing.T) {
+	csvName, err := createDummyMetadataCSV()
+	defer os.Remove(csvName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dummySampleFiles := SampleFiles{}
+	sampleFiles := map[string]SampleFiles{
+		"sample one": dummySampleFiles,
+		"sample two": dummySampleFiles,
+		"sample thr": dummySampleFiles,
+	}
+	stringMetadata := map[string]string{"Nucleotide Type": "DNA", "Foo": "Bar"}
+
+	_, err = GetCombinedMetadata(sampleFiles, stringMetadata, csvName)
+	if err == nil {
+		t.Errorf("expected GetCombinedMetadata to return missing metadata in CSV error if sample is missing from metadata CSV")
+	}
+
+	if err != nil && err.Error() != "missing metadata in CSV for samples" {
+		t.Fatal(err)
 	}
 }
 
