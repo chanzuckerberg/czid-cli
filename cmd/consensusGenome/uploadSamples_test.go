@@ -10,7 +10,26 @@ import (
 	"github.com/spf13/viper"
 )
 
+func resetVars() {
+	projectName = ""
+	stringMetadata = map[string]string{}
+	metadataCSVPath = ""
+	technology = ""
+	wetlabProtocol = ""
+	medakaModel = ""
+	clearLabs = false
+	disableBuffer = false
+	technologyOptionsString = ""
+	wetlabProtocolOptionsString = ""
+	nanoporeWetlabProtocolOptionsString = ""
+	medakaModelsString = ""
+	referenceAccession = ""
+	referenceFasta = ""
+	primerBed = ""
+}
+
 func TestClearLabsWithIncorrectParams(t *testing.T) {
+	resetVars()
 	b := bytes.NewBufferString("")
 	e := bytes.NewBufferString("")
 	ConsensusGenomeCmd.SetOut(b)
@@ -31,6 +50,7 @@ func TestClearLabsWithIncorrectParams(t *testing.T) {
 }
 
 func TestNanoporeWithIncorrectParams(t *testing.T) {
+	resetVars()
 	b := bytes.NewBufferString("")
 	e := bytes.NewBufferString("")
 	ConsensusGenomeCmd.SetOut(b)
@@ -47,6 +67,90 @@ func TestNanoporeWithIncorrectParams(t *testing.T) {
 	}
 	if !strings.HasPrefix(string(errOut), "Error: wetlab protocol \"MSSPE\" not supported, please choose one of: ") {
 		t.Fatalf("expected a wetlab protocol error but error was: %s", string(errOut))
+	}
+}
+
+func TestReferenceFastaWithNanopore(t *testing.T) {
+	resetVars()
+	b := bytes.NewBufferString("")
+	e := bytes.NewBufferString("")
+	ConsensusGenomeCmd.SetOut(b)
+	ConsensusGenomeCmd.SetErr(e)
+	ConsensusGenomeCmd.SetArgs([]string{"upload-samples", "-p", "test", "--sequencing-platform", "Nanopore", "--reference-fasta", "foo.fasta"})
+	err := ConsensusGenomeCmd.Execute()
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+
+	errOut, err := io.ReadAll(e)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(errOut) != "Error: reference-accession, reference-fasta, and primer-bed require sequencing-platform 'Illumina'\n" {
+		t.Fatalf("expected a sequencing-platform error but error was: %s", string(errOut))
+	}
+}
+
+func TestReferenceFastaWetlabProtocol(t *testing.T) {
+	resetVars()
+	b := bytes.NewBufferString("")
+	e := bytes.NewBufferString("")
+	ConsensusGenomeCmd.SetOut(b)
+	ConsensusGenomeCmd.SetErr(e)
+	ConsensusGenomeCmd.SetArgs([]string{"upload-samples", "-p", "test", "--sequencing-platform", "Illumina", "--reference-fasta", "foo.fasta", "--wetlab-protocol", "SNAP"})
+	err := ConsensusGenomeCmd.Execute()
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+
+	errOut, err := io.ReadAll(e)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(errOut) != "Error: wetlab-protocol is not supported with reference-accession, reference-fasta, or primer-bed\n" {
+		t.Fatalf("expected a sequencing-platform error but error was: %s", string(errOut))
+	}
+}
+
+func TestReferenceReferenceFastaMissingPrimerBed(t *testing.T) {
+	resetVars()
+	b := bytes.NewBufferString("")
+	e := bytes.NewBufferString("")
+	ConsensusGenomeCmd.SetOut(b)
+	ConsensusGenomeCmd.SetErr(e)
+	ConsensusGenomeCmd.SetArgs([]string{"upload-samples", "-p", "test", "--sequencing-platform", "Illumina", "--reference-fasta", "foo.fasta"})
+	err := ConsensusGenomeCmd.Execute()
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+
+	errOut, err := io.ReadAll(e)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(errOut) != "Error: reference-accession or reference-fasta require primer-bed\n" {
+		t.Fatalf("expected a sequencing-platform error but error was: %s", string(errOut))
+	}
+}
+
+func TestReferencePrimerBedMissingReferenceFasta(t *testing.T) {
+	resetVars()
+	b := bytes.NewBufferString("")
+	e := bytes.NewBufferString("")
+	ConsensusGenomeCmd.SetOut(b)
+	ConsensusGenomeCmd.SetErr(e)
+	ConsensusGenomeCmd.SetArgs([]string{"upload-samples", "-p", "test", "--sequencing-platform", "Illumina", "--primer-bed", "primer.bed"})
+	err := ConsensusGenomeCmd.Execute()
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+
+	errOut, err := io.ReadAll(e)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(errOut) != "Error: primer-bed requires reference-accession or reference-fasta\n" {
+		t.Fatalf("expected a sequencing-platform error but error was: %s", string(errOut))
 	}
 }
 

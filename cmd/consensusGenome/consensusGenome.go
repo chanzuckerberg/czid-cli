@@ -117,11 +117,11 @@ func loadSharedFlags(c *cobra.Command) {
 	)
 
 	c.Flags().StringVarP(&projectName, "project", "p", "", "Project name. Make sure the project is created on the website (required)")
-	c.Flags().StringToStringVarP(&stringMetadata, "metadatum", "m", map[string]string{}, "metadatum name and value for your sample, ex. 'host=Human'")
+	c.Flags().StringToStringVarP(&stringMetadata, "metadatum", "m", map[string]string{}, "Metadatum name and value for your sample, ex. 'host=Human'")
 	c.Flags().StringVar(&metadataCSVPath, "metadata-csv", "", "Metadata local file path.")
 	c.Flags().StringVar(&technology, "sequencing-platform", "", fmt.Sprintf("Sequencing platform used to sequence the sample, options: %s", technologyOptionsString))
 	c.Flags().StringVar(&wetlabProtocol, "wetlab-protocol", "", fmt.Sprintf(
-		"Wetlab protocol followed.\n  Options for Nanopore (optional, default: \"%s\"): %s\n  Options for Illumina (required): %s",
+		"Wetlab protocol followed. Only for SARS-CoV2, can't be used with reference-accession, reference-fasta, or primer-bed\n  Options for Nanopore (optional, default: \"%s\"): %s\n  Options for Illumina (required): %s",
 		nanoporeDefaultWetlabProtocol,
 		nanoporeWetlabProtocolOptionsString,
 		wetlabProtocolOptionsString,
@@ -136,9 +136,9 @@ func loadSharedFlags(c *cobra.Command) {
 		nanoporeDefaultWetlabProtocol,
 		defaultMedakaModel,
 	))
-	c.Flags().StringVar(&referenceAccession, "reference-accession", "", "reference accession ID, cannot be used if reference-fasta is set")
-	c.Flags().StringVar(&referenceFasta, "reference-fasta", "", "local reference fasta file")
-	c.Flags().StringVar(&primerBed, "primer-bed", "", "local primer file (.bed), only supported with --sequencing-platform Illumina")
+	c.Flags().StringVar(&referenceAccession, "reference-accession", "", "Reference accession ID, used for general consensus genomes (not SARS-CoV2), cannot be used if reference-fasta is set, requires primer-bed and sequencing-platform 'Illumina'")
+	c.Flags().StringVar(&referenceFasta, "reference-fasta", "", "Local reference fasta file, used for general consensus genomes (not SARS-CoV2), requires primer-bed and sequencing-platform 'Illumina'")
+	c.Flags().StringVar(&primerBed, "primer-bed", "", "Local primer file (.bed), used for general consensus genomes (not SARS-CoV2), requires reference-fasta or reference-accession and sequencing-platform 'Illumina'")
 	c.Flags().BoolVar(&disableBuffer, "disable-buffer", false, "Disable shared buffer pool (useful if running out of memory)")
 }
 
@@ -149,17 +149,24 @@ func validateCommonArgs() error {
 	if technology == "" {
 		return errors.New("missing required argument: sequencing-platform")
 	}
-	if _, has := Technologies[technology]; !has {
-		return fmt.Errorf("sequencing platform \"%s\" not supported, please choose one of: %s", technology, technologyOptionsString)
-	}
-	if technology == "Illumina" && wetlabProtocol == "" {
-		return errors.New("missing required argument: wetlab-protocol")
-	}
-	if _, has := WetlabProtocols[wetlabProtocol]; wetlabProtocol != "" && !has {
-		return fmt.Errorf("wetlab protocol \"%s\" not supported, please choose one of: %s", wetlabProtocol, wetlabProtocolOptionsString)
+	if technology != "Illumina" && (referenceAccession != "" || referenceFasta != "" || primerBed != "") {
+		return fmt.Errorf("reference-accession, reference-fasta, and primer-bed require sequencing-platform 'Illumina'")
+
 	}
 	if technology == "Nanopore" && wetlabProtocol == "" {
 		wetlabProtocol = "ARTIC v3"
+	}
+	if _, has := Technologies[technology]; !has {
+		return fmt.Errorf("sequencing platform \"%s\" not supported, please choose one of: %s", technology, technologyOptionsString)
+	}
+	if technology == "Illumina" && wetlabProtocol == "" && referenceAccession == "" && referenceFasta == "" && primerBed == "" {
+		return errors.New("missing required argument: wetlab-protocol")
+	}
+	if wetlabProtocol != "" && (referenceAccession != "" || referenceFasta != "" || primerBed != "") {
+		return errors.New("wetlab-protocol is not supported with reference-accession, reference-fasta, or primer-bed")
+	}
+	if _, has := WetlabProtocols[wetlabProtocol]; wetlabProtocol != "" && !has {
+		return fmt.Errorf("wetlab protocol \"%s\" not supported, please choose one of: %s", wetlabProtocol, wetlabProtocolOptionsString)
 	}
 	if _, has := nanoporeWetLabProtocols[wetlabProtocol]; wetlabProtocol != "" && technology == "Nanopore" && !has {
 		return fmt.Errorf("wetlab protocol \"%s\" not supported, please choose one of: %s", wetlabProtocol, nanoporeWetlabProtocolOptionsString)
@@ -181,6 +188,14 @@ func validateCommonArgs() error {
 
 	if referenceAccession != "" && referenceFasta != "" {
 		return fmt.Errorf("reference-accession can't be used if reference-fasta is set")
+	}
+
+	if (referenceAccession != "" || referenceFasta != "") && primerBed == "" {
+		return fmt.Errorf("reference-accession or reference-fasta require primer-bed")
+	}
+
+	if !(referenceAccession != "" || referenceFasta != "") && primerBed != "" {
+		return fmt.Errorf("primer-bed requires reference-accession or reference-fasta")
 	}
 
 	return nil
