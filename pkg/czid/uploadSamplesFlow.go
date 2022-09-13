@@ -108,7 +108,7 @@ func UploadSamplesFlow(
 				if len(sF.ReferenceFasta) > 0 {
 					allFilenames = append(allFilenames, StripLaneNumber(sF.ReferenceFasta[0]))
 				}
-				if len(sF.Single) > 0 {
+				if len(sF.PrimerBed) > 0 {
 					allFilenames = append(allFilenames, StripLaneNumber(sF.PrimerBed[0]))
 				}
 
