@@ -71,6 +71,7 @@ Follow the instructions for [installing from binaries](#from-binaries).
     Windows: `expand-archive -path 'c:\path\to\archive.zip' -destinationpath '.\czid-cli'`
 
 1. Files with shell completions are also inside so you can move them to the appropriate place for your shell
+1. To use the binary you either need to add it to your `PATH` so you can execute it as `czid` or execute the binary directly with the path to the binary (i.e. `/path/to/czid` on Linux + MacOS or `C:\path\to\czid.exe` on windows). If you are executing the binary using it's path keep in mind that you should use the path to the czid binary instead of the `czid` command every time you use it.
 
 
 Note on MacOS: Currently we don't sign our binary so you will need to manually remove the quarentine attribute from the binary: `sudo xattr -d com.apple.quarantine path/to/binary`
