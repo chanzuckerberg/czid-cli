@@ -1,4 +1,4 @@
-package shortReadMNGS
+package metagenomics
 
 import (
 	"errors"
@@ -16,9 +16,10 @@ var uploadSampleCmd = &cobra.Command{
 	Short: "Upload a single sample",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if projectName == "" {
-			return errors.New("missing required argument: project")
+		if err := validateCommonArgs(); err != nil {
+			return err
 		}
+
 		if len(args) == 0 {
 			return errors.New("missing required argument: r1path")
 		}
@@ -50,15 +51,17 @@ var uploadSampleCmd = &cobra.Command{
 			stringMetadata,
 			projectName,
 			metadataCSVPath,
-			"short-read-mngs",
-			czid.SampleOptions{},
+			workflow,
+			czid.SampleOptions{
+				Technology: technology,
+			},
 			disableBuffer,
 		)
 	},
 }
 
 func init() {
-	ShortReadMNGSCmd.AddCommand(uploadSampleCmd)
+	MetagenomicsCmd.AddCommand(uploadSampleCmd)
 	loadSharedFlags(uploadSampleCmd)
 	uploadSampleCmd.Flags().StringVarP(&sampleName, "sample-name", "s", "", "Sample name. Optional, defaults to the base file name of r1path with extensions and _R1 removed")
 }

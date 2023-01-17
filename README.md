@@ -114,9 +114,10 @@ Once you have set up you can use the `upload-sample` command to upload your samp
 Linux + MacOS:
 
 ```bash
-czid short-read-mngs upload-sample \
+czid metagenomics upload-sample \
   -p 'Project Name' \
   -s 'Sample Name' \
+  --sequencing-platform Illumina \
   --metadata-csv your_metadata.csv \
   -m 'Metadata Name=Metadata Value' \
   your_sample_R1.fastq.gz your_sample_R2.fastq.gz
@@ -125,9 +126,10 @@ czid short-read-mngs upload-sample \
 Windows:
 
 ```Powershell
-czid short-read-mngs upload-sample `
+czid metagenomics upload-sample `
   -p "Project Name" `
   -s "Sample Name" `
+  --sequencing-platform Illumina \
   --metadata-csv your_metadata.csv `
   -m "Metadata Name=Metadata Value" `
   your_sample_R1.fastq.gz your_sample_R2.fastq.gz
@@ -159,8 +161,9 @@ Once you have set up you can use the `upload-samples` command to upload your dir
 Linux + MacOS:
 
 ```bash
-czid short-read-mngs upload-samples \
+czid metagenomics upload-samples \
   -p 'Project Name' \
+  --sequencing-platform Illumina \
   --metadata-csv your_metadata.csv \
   -m 'Metadata Name=Metadata Value' \
   your_directory_of_samples
@@ -169,8 +172,9 @@ czid short-read-mngs upload-samples \
 Windows:
 
 ```Powershell
-czid short-read-mngs upload-samples `
+czid metagenomics upload-samples `
   -p "Project Name" `
+  --sequencing-platform Illumina \
   --metadata-csv your_metadata.csv `
   -m "Metadata Name=Metadata Value" `
   your_directory_of_samples
