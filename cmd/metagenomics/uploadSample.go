@@ -53,7 +53,7 @@ var uploadSampleCmd = &cobra.Command{
 			metadataCSVPath,
 			workflow,
 			czid.SampleOptions{
-				Technology: technology,
+				Technology: Technologies[technology],
 			},
 			disableBuffer,
 		)
