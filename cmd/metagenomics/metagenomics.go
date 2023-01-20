@@ -17,7 +17,7 @@ var metadataCSVPath string
 var disableBuffer bool
 var technology string
 var guppyBasecallerSetting string
-var workflow string = "short-read-mngs"
+var workflow string
 
 var Technologies = map[string]string{
 	"Illumina": "Illumina",
@@ -99,6 +99,7 @@ func validateCommonArgs() error {
 		)
 	}
 
+	workflow = "short-read-mngs"
 	if technology == "Nanopore" {
 		workflow = "long-read-mngs"
 	}
