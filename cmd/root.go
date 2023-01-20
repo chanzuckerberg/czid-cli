@@ -9,7 +9,7 @@ import (
 
 	"github.com/chanzuckerberg/czid-cli/cmd/consensusGenome"
 	"github.com/chanzuckerberg/czid-cli/cmd/generateMetadataTemplate"
-	"github.com/chanzuckerberg/czid-cli/cmd/shortReadMNGS"
+	"github.com/chanzuckerberg/czid-cli/cmd/metagenomics"
 	"github.com/chanzuckerberg/czid-cli/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -24,7 +24,7 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(shortReadMNGS.ShortReadMNGSCmd)
+	RootCmd.AddCommand(metagenomics.MetagenomicsCmd)
 	RootCmd.AddCommand(consensusGenome.ConsensusGenomeCmd)
 	RootCmd.AddCommand(generateMetadataTemplate.GenerateMetadataTemplateCmd)
 }
@@ -59,7 +59,7 @@ func initConfig() {
 
 	// Check if verbose flag is set
 	verbose, _ := RootCmd.Flags().GetBool("verbose")
-	
+
 	viper.SetEnvPrefix("czid_cli")
 	viper.AutomaticEnv() // read in environment variables that match
 

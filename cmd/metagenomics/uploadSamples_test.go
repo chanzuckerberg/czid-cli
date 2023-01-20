@@ -1,4 +1,4 @@
-package shortReadMNGS
+package metagenomics
 
 import (
 	"bytes"
@@ -10,13 +10,13 @@ import (
 
 func TestWithoutProjectID(t *testing.T) {
 	viper.Set("ACCEPTED_USER_AGREEMENT", "Y")
-	ShortReadMNGSCmd.PersistentFlags().Bool("verbose", false, "")
+	MetagenomicsCmd.PersistentFlags().Bool("verbose", false, "")
 	b := bytes.NewBufferString("")
 	e := bytes.NewBufferString("")
-	ShortReadMNGSCmd.SetOut(b)
-	ShortReadMNGSCmd.SetErr(e)
-	ShortReadMNGSCmd.SetArgs([]string{"upload-samples"})
-	err := ShortReadMNGSCmd.Execute()
+	MetagenomicsCmd.SetOut(b)
+	MetagenomicsCmd.SetErr(e)
+	MetagenomicsCmd.SetArgs([]string{"upload-samples"})
+	err := MetagenomicsCmd.Execute()
 	if err == nil {
 		t.Fatal("expected an error")
 	}

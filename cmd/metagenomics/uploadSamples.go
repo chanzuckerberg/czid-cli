@@ -1,4 +1,4 @@
-package shortReadMNGS
+package metagenomics
 
 import (
 	"errors"
@@ -19,33 +19,41 @@ var uploadSamplesCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if projectName == "" {
-			return errors.New("missing required argument: project")
+
+		if err := validateCommonArgs(); err != nil {
+			return err
 		}
+
 		if len(args) == 0 {
 			return errors.New("missing required positional argument: directory")
 		}
+
 		if len(args) > 1 {
 			return fmt.Errorf("too many positional arguments, (maximum 1), args: %v", args)
 		}
+
 		directory := args[0]
 		sampleFiles, err := czid.SamplesFromDir(directory, verbose)
+
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		return czid.UploadSamplesFlow(
 			sampleFiles,
 			stringMetadata,
 			projectName,
 			metadataCSVPath,
-			"short-read-mngs",
-			czid.SampleOptions{},
+			workflow,
+			czid.SampleOptions{
+				Technology: Technologies[technology],
+			},
 			disableBuffer,
 		)
 	},
 }
 
 func init() {
-	ShortReadMNGSCmd.AddCommand(uploadSamplesCmd)
+	MetagenomicsCmd.AddCommand(uploadSamplesCmd)
 	loadSharedFlags(uploadSamplesCmd)
 }
