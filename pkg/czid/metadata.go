@@ -77,6 +77,8 @@ func (m Metadata) MarshalJSON() ([]byte, error) {
 	}
 	if m.CollectionLocation != (GeoSearchSuggestion{}) {
 		interfaceMap["Collection Location"] = m.CollectionLocation
+	} else if m.rawCollectionLocation != "" {
+		interfaceMap["Collection Location"] = m.rawCollectionLocation
 	}
 
 	return json.Marshal(interfaceMap)
@@ -212,7 +214,7 @@ func GeoSearchSuggestions(samplesMetadata *SamplesMetadata) error {
 	}
 
 	for o, n := range remapping {
-		if o != n.String() {
+		if o != n.String() && n != (GeoSearchSuggestion{}) {
 			fmt.Printf("  replacing location \"%s\" with \"%s\"\n", o, n.String())
 		}
 	}
