@@ -3,6 +3,7 @@ package czid
 import (
 	"encoding/json"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -177,5 +178,31 @@ func TestJSONMarshal(t *testing.T) {
 
 	if _, has := mapM["collection_location"]; has {
 		t.Error("expected JSON format to filter out collection_location but it did not")
+	}
+}
+
+func TestFallbackToRawMetadataWithNoSuggestion(t *testing.T) {
+	m := NewMetadata(map[string]string{
+		"host_genome":         "Koala",
+		"collection_location": "Unknown",
+		"Water Control":       "No",
+		"Nucleotide Type":     "DNA",
+	})
+
+	if m.rawCollectionLocation != "Unknown" {
+		t.Fatalf("collection_location 'Unknown' should have been extracted into rawCollectionLocation but it was '%s'", m.rawCollectionLocation)
+	}
+
+	if m.CollectionLocation != (GeoSearchSuggestion{}) {
+		t.Fatalf("CollectionLocation should not be populated bit it was: %s", m.CollectionLocation)
+	}
+
+	b, err := json.Marshal(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(string(b), "Unknown") {
+		t.Fatalf("")
 	}
 }
