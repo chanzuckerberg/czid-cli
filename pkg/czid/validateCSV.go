@@ -137,7 +137,7 @@ func (c *Client) ValidateSamplesMetadata(projectID int, samplesMetadata SamplesM
 		if row.CollectionLocation != (GeoSearchSuggestion{}) {
 			validatorRow[1] = row.CollectionLocation
 		} else {
-			validatorRow[1] = ""
+			validatorRow[1] = row.rawCollectionLocation
 		}
 		for name, value := range row.fields {
 			headerIndex, seenHeader := headerIndexes[name]
