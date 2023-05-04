@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/chanzuckerberg/czid-cli/pkg/czid"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -34,6 +35,23 @@ Accept (y/n)? y/Y for yes (any other input to cancel): `)
 		}
 		if accepted || autoAccept {
 			viper.Set("accepted_user_agreement", "Y")
+
+			// If the user's profile_form_version is 0, then they have not yet
+			// filled out their profile form, so direct them to the web app to
+			// do so.
+			// TODO: after accepting user agreement, should stop user from all
+			// CLI actions until profile form is completed
+			client := czid.DefaultClient
+			// TODO: how to get user id?
+			fields, err := client.GetUserInfo(1)
+			if err != nil {
+				cmd.Println("fields:", fields)
+				cmd.Println("err:", err) // currently returning Get "/users/1/edit": unsupported protocol scheme ""
+			}
+			// if fields.ProfileFormVersion == 0 {
+			// 	cmd.Println("Please fill out your profile form at https://czid.org/")
+			// }
+
 			return viper.WriteConfig()
 		}
 		return nil
