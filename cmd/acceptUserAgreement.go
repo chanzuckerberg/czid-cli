@@ -49,7 +49,7 @@ Accept (y/n)? y/Y for yes (any other input to cancel): `)
 				cmd.Println("err:", err) // currently returning Get "/users/1/edit": unsupported protocol scheme ""
 			}
 			// if fields.ProfileFormVersion == 0 {
-			// 	cmd.Println("Please fill out your profile form at https://czid.org/")
+			// 	cmd.Println("Permission denied. Please finish setting up your account from the CZ ID web app to unlock CLI access.")
 			// }
 
 			return viper.WriteConfig()
