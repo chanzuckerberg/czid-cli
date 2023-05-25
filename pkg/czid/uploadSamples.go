@@ -9,6 +9,7 @@ import (
 )
 
 type createSamplesReqInputFile struct {
+	FileType	 string `json:"file_type"`
 	Name         string `json:"name"`
 	Parts        string `json:"parts"`
 	Source       string `json:"source"`
@@ -54,6 +55,14 @@ type UploadInfo struct {
 	MultipartUploadId *string `json:"multipart_upload_id"`
 	S3Path            string  `json:"s3_path"`
 }
+
+// Must match file type constants present in CZID's InputFile model
+type FileType string
+const (
+	FASTQFileType FileType = "fastq"
+	PrimerBedFileType FileType = "primer_bed"
+	ReferenceSequenceFileType FileType = "reference_sequence"
+)
 
 // CreateSamples creates samples on the back end and returns the necessary information to upload their files
 func (c *Client) CreateSamples(
@@ -109,22 +118,28 @@ func (c *Client) CreateSamples(
 			sample.ClearLabs = &sampleOptions.ClearLabs
 		}
 
+		filetype := FASTQFileType
+
 		if sampleOptions.ReferenceAccession != "" {
 			sample.ReferenceAccession = &sampleOptions.ReferenceAccession
+			filetype = ReferenceSequenceFileType
 		}
 
 		if sampleOptions.ReferenceFasta != "" {
 			referenceFasta := filepath.Base(sampleOptions.ReferenceFasta)
 			sample.ReferenceFasta = &referenceFasta
+			filetype = ReferenceSequenceFileType
 		}
 
 		if sampleOptions.PrimerBed != "" {
 			primerBed := filepath.Base(sampleOptions.PrimerBed)
 			sample.PrimerBed = &primerBed
+			filetype = PrimerBedFileType
 		}
 
 		for i, filename := range filenames {
 			sample.InputFileAttributes[i] = createSamplesReqInputFile{
+				FileType:	  string(filetype),
 				Name:         filepath.Base(filename),
 				Parts:        filepath.Base(filename),
 				Source:       filepath.Base(filename),
