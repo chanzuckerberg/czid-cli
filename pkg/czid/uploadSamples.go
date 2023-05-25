@@ -56,6 +56,7 @@ type UploadInfo struct {
 	S3Path            string  `json:"s3_path"`
 }
 
+// Must match file type constants present in CZID's InputFile model
 type FileType string
 const (
 	FASTQFileType FileType = "fastq"
