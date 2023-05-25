@@ -9,7 +9,7 @@ import (
 )
 
 type createSamplesReqInputFile struct {
-	FileType	 FileType `json:"file_type"`
+	FileType	 string `json:"file_type"`
 	Name         string `json:"name"`
 	Parts        string `json:"parts"`
 	Source       string `json:"source"`
