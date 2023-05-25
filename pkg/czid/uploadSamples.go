@@ -138,7 +138,7 @@ func (c *Client) CreateSamples(
 
 		for i, filename := range filenames {
 			sample.InputFileAttributes[i] = createSamplesReqInputFile{
-				FileType:	  filetype,
+				FileType:	  string(filetype),
 				Name:         filepath.Base(filename),
 				Parts:        filepath.Base(filename),
 				Source:       filepath.Base(filename),
