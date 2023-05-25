@@ -61,7 +61,7 @@ type FileType string
 const (
 	FASTQFileType FileType = "fastq"
 	PrimerBedFileType FileType = "primer_bed"
-	ReferenceAccessionFileType FileType = "reference_sequence"
+	ReferenceSequenceFileType FileType = "reference_sequence"
 )
 
 // CreateSamples creates samples on the back end and returns the necessary information to upload their files
@@ -122,13 +122,13 @@ func (c *Client) CreateSamples(
 
 		if sampleOptions.ReferenceAccession != "" {
 			sample.ReferenceAccession = &sampleOptions.ReferenceAccession
-			filetype = ReferenceAccessionFileType
+			filetype = ReferenceSequenceFileType
 		}
 
 		if sampleOptions.ReferenceFasta != "" {
 			referenceFasta := filepath.Base(sampleOptions.ReferenceFasta)
 			sample.ReferenceFasta = &referenceFasta
-			filetype = ReferenceAccessionFileType
+			filetype = ReferenceSequenceFileType
 		}
 
 		if sampleOptions.PrimerBed != "" {
