@@ -57,12 +57,17 @@ type UploadInfo struct {
 }
 
 // Must match file type constants present in CZID's InputFile model
-type FileType string
+type inputFileType string
 const (
-	FASTQFileType FileType = "fastq"
-	PrimerBedFileType FileType = "primer_bed"
-	ReferenceSequenceFileType FileType = "reference_sequence"
+	FASTQFileType inputFileType = "fastq"
+	PrimerBedFileType inputFileType = "primer_bed"
+	ReferenceSequenceFileType inputFileType = "reference_sequence"
 )
+
+type inputFileMetadata struct {
+	Filename string
+	FileType inputFileType
+}
 
 // CreateSamples creates samples on the back end and returns the necessary information to upload their files
 func (c *Client) CreateSamples(
@@ -79,23 +84,43 @@ func (c *Client) CreateSamples(
 
 	for sampleName := range samplesMetadata {
 		files := sampleFiles[sampleName]
-		var filenames []string
+		var filesMetadata []inputFileMetadata
 		if len(files.Single) > 0 {
-			filenames = []string{StripLaneNumber(files.Single[0])}
+			metadata := inputFileMetadata {
+				Filename: StripLaneNumber(files.Single[0]),
+				FileType: FASTQFileType,
+			}
+			filesMetadata = []inputFileMetadata{metadata}
 		} else {
-			filenames = []string{StripLaneNumber(files.R1[0]), StripLaneNumber(files.R2[0])}
+			metadataR1 := inputFileMetadata {
+				Filename: StripLaneNumber(files.R1[0]),
+				FileType: FASTQFileType,
+			}
+			metadataR2 := inputFileMetadata {
+				Filename: StripLaneNumber(files.R2[0]),
+				FileType: FASTQFileType,
+			}
+			filesMetadata = []inputFileMetadata {metadataR1, metadataR2}
 		}
 
 		if len(files.ReferenceFasta) > 0 {
-			filenames = append(filenames, files.ReferenceFasta[0])
+			metadata := inputFileMetadata { 
+				Filename: files.ReferenceFasta[0],
+				FileType: ReferenceSequenceFileType,
+			}
+			filesMetadata = append(filesMetadata, metadata)
 		}
 		if len(files.PrimerBed) > 0 {
-			filenames = append(filenames, files.PrimerBed[0])
+			metadata := inputFileMetadata {
+				Filename: files.PrimerBed[0],
+				FileType: PrimerBedFileType,
+			}
+			filesMetadata = append(filesMetadata, metadata)
 		}
 
 		sample := CreateSamplesReqSample{
 			HostGenomeName:      samplesMetadata[sampleName].HostGenome,
-			InputFileAttributes: make([]createSamplesReqInputFile, len(filenames)),
+			InputFileAttributes: make([]createSamplesReqInputFile, len(filesMetadata)),
 			Name:                sampleName,
 			ProjectID:           projectID,
 			Status:              "created",
@@ -118,31 +143,26 @@ func (c *Client) CreateSamples(
 			sample.ClearLabs = &sampleOptions.ClearLabs
 		}
 
-		filetype := FASTQFileType
-
 		if sampleOptions.ReferenceAccession != "" {
 			sample.ReferenceAccession = &sampleOptions.ReferenceAccession
-			filetype = ReferenceSequenceFileType
 		}
 
 		if sampleOptions.ReferenceFasta != "" {
 			referenceFasta := filepath.Base(sampleOptions.ReferenceFasta)
 			sample.ReferenceFasta = &referenceFasta
-			filetype = ReferenceSequenceFileType
 		}
 
 		if sampleOptions.PrimerBed != "" {
 			primerBed := filepath.Base(sampleOptions.PrimerBed)
 			sample.PrimerBed = &primerBed
-			filetype = PrimerBedFileType
 		}
 
-		for i, filename := range filenames {
+		for i, metadata := range filesMetadata {
 			sample.InputFileAttributes[i] = createSamplesReqInputFile{
-				FileType:	  string(filetype),
-				Name:         filepath.Base(filename),
-				Parts:        filepath.Base(filename),
-				Source:       filepath.Base(filename),
+				FileType:	  string(metadata.FileType),
+				Name:         filepath.Base(metadata.Filename),
+				Parts:        filepath.Base(metadata.Filename),
+				Source:       filepath.Base(metadata.Filename),
 				SourceType:   "local",
 				UploadClient: "cli",
 			}
