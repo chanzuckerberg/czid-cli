@@ -111,6 +111,8 @@ Be sure to set the sample name in the `Sample Name` column of the CSV to the sam
 
 Once you have set up you can use the `upload-sample` command to upload your sample to CZ ID.
 
+**Illumina**
+
 Linux + MacOS:
 
 ```bash
@@ -129,13 +131,39 @@ Windows:
 czid metagenomics upload-sample `
   -p "Project Name" `
   -s "Sample Name" `
-  --sequencing-platform Illumina \
+  --sequencing-platform Illumina `
   --metadata-csv your_metadata.csv `
   -m "Metadata Name=Metadata Value" `
   your_sample_R1.fastq.gz your_sample_R2.fastq.gz
 ```
 
 Note: The sample name is optional. If it is not included it will be computed from your input file name based on the same rules as uploading multiple samples.
+
+**Nanopore**
+
+Linux + MacOS:
+
+```bash
+czid metagenomics upload-sample \
+  --project 'Your Project ID' \
+  --sample-name 'Your Sample Name' \
+  --metadata-csv 'Your_metadata_file.csv' \
+  --sequencing-platform 'Nanopore' \
+  --guppy-basecaller-setting 'hac' \
+  your_sample.fastq.gz
+```
+
+Windows:
+
+```Powershell
+czid metagenomics upload-sample `
+  --project "Your Project ID" `
+  --sample-name "Your Sample Name" `
+  --metadata-csv "Your_metadata_file.csv" `
+  --sequencing-platform "Nanopore" `
+  --guppy-basecaller-setting "hac" `
+  your_sample.fastq.gz
+```
 
 #### Upload Multiple Samples
 
@@ -158,6 +186,8 @@ To associate a row of metadata with a sample you must enter the correct sample n
 
 Once you have set up you can use the `upload-samples` command to upload your directory to CZ ID.
 
+**Illumina**
+
 Linux + MacOS:
 
 ```bash
@@ -174,11 +204,36 @@ Windows:
 ```Powershell
 czid metagenomics upload-samples `
   -p "Project Name" `
-  --sequencing-platform Illumina \
+  --sequencing-platform Illumina `
   --metadata-csv your_metadata.csv `
   -m "Metadata Name=Metadata Value" `
   your_directory_of_samples
 ```
+
+**Nanopore**
+
+Linux + MacOS:
+
+```bash
+czid metagenomics upload-samples \
+  --project 'Your Project ID' \
+  --metadata-csv 'Your_metadata_file.csv' \
+  --sequencing-platform 'Nanopore' \
+  --guppy-basecaller-setting 'hac' \
+  your_directory_of_samples
+```
+
+Windows:
+
+```Powershell
+czid metagenomics upload-samples `
+  --project "Your Project ID" `
+  --metadata-csv "Your_metadata_file.csv" `
+  --sequencing-platform "Nanopore" `
+  --guppy-basecaller-setting "hac" `
+  your_directory_of_samples
+```
+
 
 ## Configuration
 
