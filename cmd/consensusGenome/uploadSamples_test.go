@@ -112,6 +112,7 @@ func TestReferenceFastaWetlabProtocol(t *testing.T) {
 	}
 }
 
+// The command should accept a reference fasta without a primer-bed argument.
 func TestReferenceReferenceFastaMissingPrimerBed(t *testing.T) {
 	resetVars()
 	b := bytes.NewBufferString("")
