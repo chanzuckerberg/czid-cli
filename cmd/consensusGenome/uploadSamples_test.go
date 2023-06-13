@@ -128,6 +128,8 @@ func TestReferenceReferenceFastaMissingPrimerBed(t *testing.T) {
 	errOut, err := io.ReadAll(e)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if errOut != nil {
 		t.Fatalf("Unexpected %s", string(errOut))
 	}
 }
