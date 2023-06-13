@@ -190,10 +190,6 @@ func validateCommonArgs() error {
 		return fmt.Errorf("reference-accession can't be used if reference-fasta is set")
 	}
 
-	if (referenceAccession != "" || referenceFasta != "") && primerBed == "" {
-		return fmt.Errorf("reference-accession or reference-fasta require primer-bed")
-	}
-
 	if !(referenceAccession != "" || referenceFasta != "") && primerBed != "" {
 		return fmt.Errorf("primer-bed requires reference-accession or reference-fasta")
 	}
