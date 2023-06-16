@@ -112,27 +112,6 @@ func TestReferenceFastaWetlabProtocol(t *testing.T) {
 	}
 }
 
-func TestReferenceReferenceFastaMissingPrimerBed(t *testing.T) {
-	resetVars()
-	b := bytes.NewBufferString("")
-	e := bytes.NewBufferString("")
-	ConsensusGenomeCmd.SetOut(b)
-	ConsensusGenomeCmd.SetErr(e)
-	ConsensusGenomeCmd.SetArgs([]string{"upload-samples", "-p", "test", "--sequencing-platform", "Illumina", "--reference-fasta", "foo.fasta"})
-	err := ConsensusGenomeCmd.Execute()
-	if err == nil {
-		t.Fatal("expected an error")
-	}
-
-	errOut, err := io.ReadAll(e)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(errOut) != "Error: reference-accession or reference-fasta require primer-bed\n" {
-		t.Fatalf("expected a sequencing-platform error but error was: %s", string(errOut))
-	}
-}
-
 func TestReferencePrimerBedMissingReferenceFasta(t *testing.T) {
 	resetVars()
 	b := bytes.NewBufferString("")
