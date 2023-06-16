@@ -136,8 +136,8 @@ func loadSharedFlags(c *cobra.Command) {
 		nanoporeDefaultWetlabProtocol,
 		defaultMedakaModel,
 	))
-	c.Flags().StringVar(&referenceAccession, "reference-accession", "", "Reference accession ID, used for general consensus genomes (not SARS-CoV2), cannot be used if reference-fasta is set, requires primer-bed and sequencing-platform 'Illumina'")
-	c.Flags().StringVar(&referenceFasta, "reference-fasta", "", "Local reference fasta file, used for general consensus genomes (not SARS-CoV2), requires primer-bed and sequencing-platform 'Illumina'")
+	c.Flags().StringVar(&referenceAccession, "reference-accession", "", "Reference accession ID, used for general consensus genomes (not SARS-CoV2), cannot be used if reference-fasta is set, requires sequencing-platform 'Illumina'")
+	c.Flags().StringVar(&referenceFasta, "reference-fasta", "", "Local reference fasta file, used for general consensus genomes (not SARS-CoV2), requires sequencing-platform 'Illumina'")
 	c.Flags().StringVar(&primerBed, "primer-bed", "", "Local primer file (.bed), used for general consensus genomes (not SARS-CoV2), requires reference-fasta or reference-accession and sequencing-platform 'Illumina'")
 	c.Flags().BoolVar(&disableBuffer, "disable-buffer", false, "Disable shared buffer pool (useful if running out of memory)")
 }
@@ -185,15 +185,9 @@ func validateCommonArgs() error {
 			return fmt.Errorf("medaka-model %s is required with clearlabs", defaultMedakaModel)
 		}
 	}
-
 	if referenceAccession != "" && referenceFasta != "" {
 		return fmt.Errorf("reference-accession can't be used if reference-fasta is set")
 	}
-
-	if (referenceAccession != "" || referenceFasta != "") && primerBed == "" {
-		return fmt.Errorf("reference-accession or reference-fasta require primer-bed")
-	}
-
 	if !(referenceAccession != "" || referenceFasta != "") && primerBed != "" {
 		return fmt.Errorf("primer-bed requires reference-accession or reference-fasta")
 	}

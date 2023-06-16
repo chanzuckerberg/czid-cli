@@ -100,7 +100,7 @@ func (c *Client) CreateSamples(
 				Filename: StripLaneNumber(files.R2[0]),
 				FileType: FASTQFileType,
 			}
-			filesMetadata = []inputFileMetadata {metadataR1, metadataR2}
+			filesMetadata = []inputFileMetadata{metadataR1, metadataR2}
 		}
 
 		if len(files.ReferenceFasta) > 0 {

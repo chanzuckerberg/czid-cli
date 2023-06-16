@@ -108,7 +108,7 @@ var guidedUploadCmd = &cobra.Command{
 		var sampleName string
 		var dirname string
 		if quantity == "single" {
-			fOne := getInput(cmd, reader, "Enter R1 fielpath for a paired-end sample or filepath to single file for a single-end sample:")
+			fOne := getInput(cmd, reader, "Enter R1 filepath for a paired-end sample or filepath to single file for a single-end sample:")
 			uploadArgs = append(uploadArgs, "upload-sample", fOne)
 
 			fTwo := getInput(cmd, reader, "Enter R2 filepath for a paired-end sample or press enter for a single-end sample:")
