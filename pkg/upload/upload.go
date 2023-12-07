@@ -94,6 +94,23 @@ func (u *Uploader) runProgressBar(fileSize int64) {
 	}
 }
 
+// initSize tunes the partSize based on the size of the object to upload.
+// it is based on the initSize method from s3 manager,
+// (github.com/chanzuckerberg/aws-sdk-go-v2/feature/s3/manager@v1.1.0/upload.go)
+// however that method does not work for our use case because we are uploading
+// with MultiReader which does not implement Seek. The s3 manager version uses
+// Seek methods to get the total size for this optimization. This method
+// replicates the logic with an explicit size parameter.
+func (u *Uploader) initSize(size int64) {
+	// Try to adjust partSize if it is too small and account for
+	// integer division truncation.
+	if size/u.u.PartSize >= int64(u.u.MaxUploadParts) {
+		// Add one to the part size to account for remainders
+		// during the size calculation. e.g odd number of bytes.
+		u.u.PartSize = (size / int64(u.u.MaxUploadParts)) + 1
+	}
+}
+
 func (u *Uploader) UploadFiles(filenames []string, s3path string, multipartUploadId *string) error {
 	size := int64(0)
 	for _, filename := range filenames {
@@ -103,6 +120,7 @@ func (u *Uploader) UploadFiles(filenames []string, s3path string, multipartUploa
 		}
 		size += stat.Size()
 	}
+	u.initSize(size)
 
 	readers := make([]io.Reader, len(filenames))
 	for i, filename := range filenames {
