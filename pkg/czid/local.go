@@ -77,6 +77,10 @@ func SamplesFromDir(directory string, verbose bool) (map[string]SampleFiles, err
 			sampleName := ToSampleName(path)
 			sampleFiles := pairs[sampleName]
 
+			if len(pairs) >= 500 {
+				return fmt.Errorf("to not overwhelm CZ ID, please limit your uploads to less than 500 samples per upload, and not more than 1,000 samples per week")
+			}
+
 			if IsR1(path) {
 				if len(sampleFiles.Single) != 0 {
 					return fmt.Errorf("found R1 file and single end file for sample '%s': %s, %s", sampleName, path, sampleFiles.Single)
