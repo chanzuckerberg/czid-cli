@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/chanzuckerberg/czid-cli/cmd/consensusGenome"
+	"github.com/chanzuckerberg/czid-cli/cmd/metagenomics"
 	"github.com/chanzuckerberg/czid-cli/pkg/auth0"
 	"github.com/chanzuckerberg/czid-cli/pkg/util"
 )
@@ -94,7 +95,7 @@ var guidedUploadCmd = &cobra.Command{
 			cmd,
 			reader,
 			"What pipeline would you like to run on your sample?",
-			[]string{"short-read-mngs", "consensus-genome"},
+			[]string{"metagenomics", "consensus-genome", "amr"},
 		)
 
 		uploadArgs := []string{workflow}
@@ -151,6 +152,26 @@ var guidedUploadCmd = &cobra.Command{
 					util.StringMapKeys(consensusGenome.WetlabProtocols),
 				)
 				uploadArgs = append(uploadArgs, "--wetlab-protocol", wetlabProtocol)
+			}
+		}
+
+		if workflow == "metagenomics" {
+			technology := optionsSelect(
+				cmd,
+				reader,
+				"What sequencing platform did you use?",
+				util.StringMapKeys(metagenomics.Technologies),
+			)
+			uploadArgs = append(uploadArgs, "--sequencing-platform", technology)
+
+			if technology == "Nanopore" {
+				guppyBasecallerSetting := optionsSelect(
+					cmd,
+					reader,
+					"What Guppy basecaller setting did you use?",
+					util.StringMapKeys(metagenomics.GuppyBasecallerSettings),
+				)
+				uploadArgs = append(uploadArgs, "--guppy-basecaller-setting", guppyBasecallerSetting)
 			}
 		}
 

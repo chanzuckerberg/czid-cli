@@ -6,3 +6,4 @@ bin
 /czid
 .env
 test-files/
+.DS_Store

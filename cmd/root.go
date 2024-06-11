@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/chanzuckerberg/czid-cli/cmd/amr"
 	"github.com/chanzuckerberg/czid-cli/cmd/consensusGenome"
 	"github.com/chanzuckerberg/czid-cli/cmd/generateMetadataTemplate"
 	"github.com/chanzuckerberg/czid-cli/cmd/metagenomics"
@@ -26,6 +27,7 @@ var RootCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(metagenomics.MetagenomicsCmd)
 	RootCmd.AddCommand(consensusGenome.ConsensusGenomeCmd)
+	RootCmd.AddCommand(amr.AmrCmd)
 	RootCmd.AddCommand(generateMetadataTemplate.GenerateMetadataTemplateCmd)
 }
 
