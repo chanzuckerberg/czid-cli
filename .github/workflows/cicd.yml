@@ -73,7 +73,7 @@ jobs:
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: release --rm-dist -f .goreleaser.prerelease.yml
+          args: release --clean -f .goreleaser.prerelease.yml
         env:
           AUTH_0_CLIENT_ID: ${{ secrets.AUTH_0_CLIENT_ID }}
           AUTH0_HOST: ${{ secrets.AUTH0_HOST }}
@@ -94,7 +94,7 @@ jobs:
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: release --rm-dist -f .goreleaser.yml
+          args: release --clean -f .goreleaser.yml
         env:
           AUTH_0_CLIENT_ID: ${{ secrets.AUTH_0_CLIENT_ID }}
           AUTH0_HOST: ${{ secrets.AUTH0_HOST }}
