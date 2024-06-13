@@ -137,6 +137,7 @@ czid metagenomics upload-sample `
   your_sample_R1.fastq.gz your_sample_R2.fastq.gz
 ```
 
+
 Note: The sample name is optional. If it is not included it will be computed from your input file name based on the same rules as uploading multiple samples.
 
 **Nanopore**
@@ -162,6 +163,28 @@ czid metagenomics upload-sample `
   --metadata-csv "Your_metadata_file.csv" `
   --sequencing-platform "Nanopore" `
   --guppy-basecaller-setting "hac" `
+  your_sample.fastq.gz
+```
+
+**AMR**
+
+Linux + MacOS:
+
+```bash
+czid amr upload-sample \
+  --project 'Your Project ID' \
+  --sample-name 'Your Sample Name' \
+  --metadata-csv 'Your_metadata_file.csv' \
+  your_sample.fastq.gz
+```
+
+Windows:
+
+```Powershell
+czid amr upload-sample `
+  --project "Your Project ID" `
+  --sample-name "Your Sample Name" `
+  --metadata-csv "Your_metadata_file.csv" `
   your_sample.fastq.gz
 ```
 
@@ -234,6 +257,27 @@ czid metagenomics upload-samples `
   your_directory_of_samples
 ```
 
+**AMR**
+
+Linux + MacOS:
+
+```bash
+czid amr upload-samples \
+  -p 'Project Name' \
+  --metadata-csv your_metadata.csv \
+  -m 'Metadata Name=Metadata Value' \
+  your_directory_of_samples
+```
+
+Windows:
+
+```Powershell
+czid amr upload-samples `
+  -p "Project Name" `
+  --metadata-csv your_metadata.csv `
+  -m "Metadata Name=Metadata Value" `
+  your_directory_of_samples
+```
 
 ## Configuration
 
