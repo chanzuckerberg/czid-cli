@@ -137,7 +137,6 @@ czid metagenomics upload-sample `
   your_sample_R1.fastq.gz your_sample_R2.fastq.gz
 ```
 
-
 Note: The sample name is optional. If it is not included it will be computed from your input file name based on the same rules as uploading multiple samples.
 
 **Nanopore**
