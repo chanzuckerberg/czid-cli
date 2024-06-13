@@ -57,7 +57,7 @@ archives:
 
 brews:
 - description: "A CLI for uploading samples to Chan Zuckerberg ID"
-  tap:
+  repository:
     owner: chanzuckerberg
     name: homebrew-tap
     token: "{{.Env.HOMEBREW_TAP_GITHUB_TOKEN}}"
