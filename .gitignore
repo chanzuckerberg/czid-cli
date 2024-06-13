@@ -7,3 +7,5 @@ bin
 .env
 test-files/
 .DS_Store
+
+dist/
