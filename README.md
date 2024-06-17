@@ -165,6 +165,28 @@ czid metagenomics upload-sample `
   your_sample.fastq.gz
 ```
 
+**AMR**
+
+Linux + MacOS:
+
+```bash
+czid amr upload-sample \
+  --project 'Your Project ID' \
+  --sample-name 'Your Sample Name' \
+  --metadata-csv 'Your_metadata_file.csv' \
+  your_sample.fastq.gz
+```
+
+Windows:
+
+```Powershell
+czid amr upload-sample `
+  --project "Your Project ID" `
+  --sample-name "Your Sample Name" `
+  --metadata-csv "Your_metadata_file.csv" `
+  your_sample.fastq.gz
+```
+
 #### Upload Multiple Samples
 
 The CZ ID CLI can search a directory for read files and upload supported files as samples. Supported file types are: `.fastq`/`.fq`/`.fasta`/`.fa`/`.fastq.gz`/`.fq.gz`/`.fasta.gz`/`.fa.gz`. Sample names are computed based on the names of the files. Sample names the base name of the file with the extension, `_R1`, `_R2`, `_R1_001`, and `_R2_001` removed. If two files have the same sample name and one has `R1` and the other has `R2` the files will be uploaded to the same sample as paired reads. Since only the base name of the file and no parent directories are taken into account file names must be globally unique (except for the same sample's `R1` and `R2` files). Here are a few examples of sample names for various paths:
@@ -234,6 +256,27 @@ czid metagenomics upload-samples `
   your_directory_of_samples
 ```
 
+**AMR**
+
+Linux + MacOS:
+
+```bash
+czid amr upload-samples \
+  -p 'Project Name' \
+  --metadata-csv your_metadata.csv \
+  -m 'Metadata Name=Metadata Value' \
+  your_directory_of_samples
+```
+
+Windows:
+
+```Powershell
+czid amr upload-samples `
+  -p "Project Name" `
+  --metadata-csv your_metadata.csv `
+  -m "Metadata Name=Metadata Value" `
+  your_directory_of_samples
+```
 
 ## Configuration
 
