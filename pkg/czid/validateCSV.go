@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 )
 
 // validateCSVReq
@@ -162,8 +163,12 @@ func (c *Client) ValidateSamplesMetadata(projectID int, samplesMetadata SamplesM
 
 	// HACK: new host genomes is a misnomer, all host genomes are returned
 	//   new ones will have ShowAsOption = false
+	// HACK 2: Human always returns ShowAsOption = false
 	hasNewHostGenomes := false
 	for _, hostGenome := range res.NewHostGenomes {
+		if strings.EqualFold(hostGenome.Name, "Human") {
+			continue
+		}
 		if !hostGenome.ShowAsOption {
 			hasNewHostGenomes = true
 			break
