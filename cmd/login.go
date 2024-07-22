@@ -38,8 +38,10 @@ at https://chanzuckerberg.zendesk.com/hc/en-us/requests/new.`,
 			return err
 		}
 		err = auth0.DefaultClient.Login(headless, persistent)
-		if err == nil {
-			fmt.Print("Thanks for logging in! Just a friendly reminder: To not overwhelm CZ ID, please limit your uploads to less than 500 samples per upload, and not more than 1,000 samples per week") 
+		if err != nil {
+			return err
+		} else {
+			fmt.Print("Thanks for logging in! Just a friendly reminder: To not overwhelm CZ ID, please limit your uploads to less than 500 samples per upload, and not more than 1,000 samples per week.\n")
 		}
 
 		return nil
